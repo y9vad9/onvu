@@ -3,6 +3,13 @@ import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes } from '@core/ListNotes'
 import { config as siteConfig } from '~/site.config'
 import { siteUrl } from '@lib/seo/url'
+import { routing } from '@i18n/routing'
+
+export const dynamic = 'force-static'
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }))
+}
 
 export async function GET(
   _req: Request,

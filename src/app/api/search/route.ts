@@ -5,6 +5,8 @@ import { buildSearchIndex } from '@core/search/BuildSearchIndex'
 import { routing } from '@i18n/routing'
 import type { SearchIndexEntry } from '@core/search/SearchIndex'
 
+export const dynamic = 'force-dynamic'
+
 const cachedIndexByLocale = new Map<string, Promise<SearchIndexEntry[]>>()
 
 function getIndex(locale: string): Promise<SearchIndexEntry[]> {

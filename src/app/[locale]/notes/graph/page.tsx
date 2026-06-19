@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { createRepository } from '@adapters/createRepositories'
 import { buildMentionGraph } from '@core/graph/BuildMentionGraph'
 import { GlobalGraph } from '@components/graph/GlobalGraph'
@@ -25,6 +25,7 @@ export default async function GraphPage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: 'garden' })
   const repo = createRepository(locale)
   const graph = await buildMentionGraph(repo)

@@ -5,6 +5,7 @@ import { NotesHeader } from '@components/shell/NotesHeader'
 import { ThemeProvider } from '@components/shell/ThemeProvider'
 import { PanelWrapper } from '@components/garden/PanelWrapper'
 import { GardenShortcuts } from '@components/garden/GardenShortcuts'
+import { setRequestLocale } from 'next-intl/server'
 
 export default async function NotesLayout({
   children,
@@ -14,6 +15,7 @@ export default async function NotesLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  setRequestLocale(locale)
   const repo = createRepository(locale)
   const allNotes = await listAllNotes(repo)
 

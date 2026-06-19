@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "mv src/app/api src/api-temp && ONVU_MODE=static next build ; STATUS=$? ; mv src/api-temp src/app/api ; exit $STATUS",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",

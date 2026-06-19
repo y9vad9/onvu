@@ -17,7 +17,10 @@ export function LocalGraph({ slug }: { slug: string }) {
 
   useEffect(() => {
     let aborted = false
-    fetch(`/api/graph?locale=${encodeURIComponent(params.locale)}`)
+    const url = process.env.NEXT_PUBLIC_ONVU_MODE === 'static'
+      ? `/_static/${params.locale}/graph.json`
+      : `/api/graph?locale=${encodeURIComponent(params.locale)}`
+    fetch(url)
       .then((r) => r.json())
       .then((g: MentionGraph) => { if (!aborted) setFullGraph(g) })
       .catch(() => {})

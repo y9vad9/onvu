@@ -3,6 +3,8 @@ import { createRepository } from '@adapters/createRepositories'
 import { buildMentionGraph } from '@core/graph/BuildMentionGraph'
 import { routing } from '@i18n/routing'
 
+export const dynamic = 'force-dynamic'
+
 const cached = new Map<string, ReturnType<typeof buildMentionGraph>>()
 
 export async function GET(req: Request) {

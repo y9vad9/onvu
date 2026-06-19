@@ -10,6 +10,8 @@ import { useNoteContextStore } from '@store/noteContextStore'
 import { useListKeyboardNav } from '@hooks/useListKeyboardNav'
 import { NoteLink } from './NoteLink'
 
+import type { SearchIndexEntry } from '@core/search/SearchIndex'
+
 interface OccurrenceHit {
   slug: string
   title: string
@@ -32,6 +34,44 @@ interface FileTreeEntry {
   slug: string
   displayTitle: string
   isSeries: boolean
+}
+
+const SNIPPET_RADIUS = 60
+const MAX_HITS_PER_NOTE = 8
+
+function findOccurrences(
+  entry: SearchIndexEntry,
+  needle: string,
+): OccurrenceHit[] {
+  const haystack = entry.rawText
+  if (!haystack) return []
+  const lowerHay = haystack.toLowerCase()
+  const lowerNeedle = needle.toLowerCase()
+  const hits: OccurrenceHit[] = []
+  let from = 0
+  let occurrence = 0
+  while (occurrence < MAX_HITS_PER_NOTE) {
+    const at = lowerHay.indexOf(lowerNeedle, from)
+    if (at === -1) break
+    const sStart = Math.max(0, at - SNIPPET_RADIUS)
+    const sEnd = Math.min(haystack.length, at + needle.length + SNIPPET_RADIUS)
+    const prefix = sStart > 0 ? '…' : ''
+    const suffix = sEnd < haystack.length ? '…' : ''
+    const snippetBody = haystack.slice(sStart, sEnd)
+    hits.push({
+      slug: entry.slug,
+      title: entry.title,
+      parents: entry.parents,
+      date: entry.date,
+      hit: occurrence,
+      snippet: prefix + snippetBody + suffix,
+      matchStart: prefix.length + (at - sStart),
+      matchLength: needle.length,
+    })
+    from = at + needle.length
+    occurrence += 1
+  }
+  return hits
 }
 
 function buildFileTree(notes: NoteListItem[]): FileTreeEntry[] {
@@ -69,6 +109,7 @@ export function ExplorerPanel({ notes }: { notes: NoteListItem[] }) {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<OccurrenceHit[]>([])
+  const [searchIndex, setSearchIndex] = useState<SearchIndexEntry[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const filterInputRef = useRef<HTMLInputElement>(null)
   const [fileFilter, setFileFilter] = useState('')
@@ -149,11 +190,46 @@ export function ExplorerPanel({ notes }: { notes: NoteListItem[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [explorerFocusNonce])
 
+  // Load search index dynamically on search panel usage in static mode
+  useEffect(() => {
+    if (
+      process.env.NEXT_PUBLIC_ONVU_MODE === 'static' &&
+      explorerMode === 'search' &&
+      searchQuery.trim() &&
+      searchIndex.length === 0
+    ) {
+      fetch(`/_static/${params.locale}/search-index.json`)
+        .then((res) => {
+          if (res.ok) return res.json()
+          throw new Error()
+        })
+        .then((data) => setSearchIndex(data))
+        .catch(() => {})
+    }
+  }, [explorerMode, searchQuery, searchIndex.length, params.locale])
+
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([])
       return
     }
+
+    if (process.env.NEXT_PUBLIC_ONVU_MODE === 'static') {
+      if (searchIndex.length === 0) return
+      const out: OccurrenceHit[] = []
+      const q = searchQuery.trim()
+      for (const entry of searchIndex) {
+        const hits = findOccurrences(entry, q)
+        for (const h of hits) {
+          out.push(h)
+          if (out.length >= 200) break
+        }
+        if (out.length >= 200) break
+      }
+      setSearchResults(out)
+      return
+    }
+
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&fulltext=1`)
@@ -163,7 +239,7 @@ export function ExplorerPanel({ notes }: { notes: NoteListItem[] }) {
       }
     }, 150)
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, searchIndex])
 
   // Forward arrow keys / Enter from the filter & search inputs to the list
   // below so the user can type a filter and immediately step through results

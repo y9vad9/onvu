@@ -2,12 +2,29 @@ import { ImageResponse } from 'next/og'
 import { createRepository } from '@adapters/createRepositories'
 import { getNote } from '@core/GetNote'
 import { config as siteConfig } from '~/site.config'
+import { routing } from '@i18n/routing'
+import fs from 'node:fs'
+import path from 'node:path'
 
+export const dynamic = 'force-static'
 export const runtime = 'nodejs'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
-
 export const alt = 'Article preview'
+
+export function generateStaticParams() {
+  return routing.locales.flatMap((locale) => {
+    const notesDir = path.join(process.cwd(), 'content', 'notes', locale)
+    try {
+      return fs
+        .readdirSync(notesDir)
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => ({ locale, slug: f.replace(/\.md$/, '') }))
+    } catch {
+      return []
+    }
+  })
+}
 
 export default async function NoteOgImage({
   params,

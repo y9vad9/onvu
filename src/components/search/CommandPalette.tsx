@@ -19,7 +19,10 @@ const cachedIndex = new Map<string, SearchIndexEntry[]>()
 async function loadIndex(locale: string): Promise<SearchIndexEntry[]> {
   const hit = cachedIndex.get(locale)
   if (hit) return hit
-  const res = await fetch(`/api/search-index?locale=${encodeURIComponent(locale)}`)
+  const url = process.env.NEXT_PUBLIC_ONVU_MODE === 'static'
+    ? `/_static/${locale}/search-index.json`
+    : `/api/search-index?locale=${encodeURIComponent(locale)}`
+  const res = await fetch(url)
   if (res.ok) {
     const data: SearchIndexEntry[] = await res.json()
     cachedIndex.set(locale, data)

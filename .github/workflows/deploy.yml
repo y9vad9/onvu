@@ -43,7 +43,8 @@ jobs:
 
       - run: npm ci
       
-      - run: npm run build
+      - name: Build static export
+        run: npm run build:static
       
       - uses: cloudflare/wrangler-action@v3
         with:

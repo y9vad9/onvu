@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { createRepository } from '@adapters/createRepositories'
 import { getNote } from '@core/GetNote'
 import { listAllNotes } from '@core/ListNotes'
@@ -75,6 +75,7 @@ export default async function NotePage({
   params: Promise<{ locale: string; slug: string }>
 }) {
   const { locale, slug } = await params
+  setRequestLocale(locale)
   const repo = createRepository(locale)
   const note = await getNote(repo, slug)
   if (!note) notFound()

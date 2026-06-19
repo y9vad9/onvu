@@ -30,7 +30,8 @@ npm run dev
 
 ### 2. Available Scripts
 - `npm run dev` - Start local Next.js development server.
-- `npm run build` - Compile the production bundle, processing all notes and assets.
+- `npm run build` - Compile the dynamic production bundle for server hosting.
+- `npm run build:static` - Compile the static export (`out/` directory) for CDNs/Cloudflare Pages.
 - `npm run start` - Run the production-built Next.js server locally.
 - `npm run lint` - Lint the codebase.
 - `npm run test` - Run Vitest unit and integration suites.
@@ -85,19 +86,57 @@ At build time:
 3. Compressed assets are written with content-addressed filenames into `/public/notes-assets/`.
 4. This directory (`/public/notes-assets/`) is git-ignored, meaning you never check bloated production WebP files into version control. Keep only your source images in the content folder.
 
-## Deployments & Upstream Merges
+## Deployment
 
-### Deploying to Production
-You can deploy Onvu to Vercel, Netlify, or any static hosting provider.
-Configure the following environment variable for absolute canonical URLs in sitemaps and RSS:
+### General Setup
+
+Set the following environment variable so sitemaps, RSS feeds, and canonical URLs resolve correctly in production:
+
 ```env
 NEXT_PUBLIC_BASE_URL=https://yourdomain.com
 ```
 
+Onvu can be deployed to Vercel, Netlify, or any platform that supports Next.js or static export.
+
+### Cloudflare Pages (Static Export)
+
+Onvu can be built as a fully static application that can be hosted on Cloudflare Pages, GitHub Pages, or any CDN. 
+
+When deploying statically, use the command `npm run build:static` (pre-configured in `.github/workflows/deploy.yml`). This command:
+1. Temporarily moves the server-only dynamic `/api` routes out of the Next.js compilation folder during the build to satisfy Next's static export requirements.
+2. Directs the frontend client (via `NEXT_PUBLIC_ONVU_MODE=static`) to load all search indexes and knowledge graph data from pre-built, static JSON snapshots emitted under `public/_static/`.
+
+A ready-to-go GitHub Actions workflow is included at `.github/workflows/deploy.yml`.
+
+**1. Add repository secrets**
+
+In your GitHub repository, go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Where to get it |
+|:---|:---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens (use the "Edit Cloudflare Pages" template) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → right sidebar on any zone page |
+
+**2. Update the project name**
+
+In `.github/workflows/deploy.yml`, change the `--project-name` value in the Wrangler command to match your Cloudflare Pages project name:
+
+```yaml
+command: pages deploy out --project-name=your-project-name
+```
+
+**3. Enable automatic deploys on push**
+
+By default, the workflow only runs when triggered manually (via **Actions → Deploy to Cloudflare Pages → Run workflow**). To automate it on every push to `main`, open `.github/workflows/deploy.yml` and uncomment the `push` trigger block at the top of the file.
+
 ### Pulling Upstream Updates
-To pull new features, bugs fixes, and engine updates from the main template:
+
+To pull new features, bug fixes, and engine updates from the main template:
+
 ```bash
 git fetch upstream
 git merge upstream/main
 ```
-Because of the `merge=ours` policies, your customized files under `content/` and `site.config.ts` will automatically merge cleanly without risk of loss.
+
+Because of the `merge=ours` policies in `.gitattributes`, your files under `content/` and `site.config.ts` will merge cleanly without risk of loss.
+

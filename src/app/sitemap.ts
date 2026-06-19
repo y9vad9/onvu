@@ -5,6 +5,8 @@ import { routing } from '@i18n/routing'
 import { config as siteConfig } from '~/site.config'
 import { absoluteUrl, localizedPath } from '@lib/seo/url'
 
+export const dynamic = 'force-static'
+
 const NOINDEX = new Set(siteConfig.seo?.noindexPaths ?? ['/notes/graph'])
 
 function languagesFor(path: string): Record<string, string> {

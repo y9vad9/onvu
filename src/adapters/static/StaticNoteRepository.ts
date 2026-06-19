@@ -17,7 +17,10 @@ export class StaticNoteRepository implements NoteRepository {
 
   private async load(): Promise<Map<string, Note>> {
     if (this.notes) return this.notes
-    const res = await fetch(`/api/notes-index?locale=${encodeURIComponent(this.locale)}`, {
+    const url = process.env.NEXT_PUBLIC_ONVU_MODE === 'static'
+      ? `/_static/${this.locale}/notes-index.json`
+      : `/api/notes-index?locale=${encodeURIComponent(this.locale)}`
+    const res = await fetch(url, {
       cache: 'force-cache',
     })
     if (!res.ok) throw new Error('Failed to load static notes index')
