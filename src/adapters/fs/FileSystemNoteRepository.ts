@@ -122,8 +122,13 @@ export class FileSystemNoteRepository implements NoteRepository {
               resolveImage: (ref) => processNoteImage(ref, noteDir),
               resolveVideo: (ref) => processNoteVideo(ref, noteDir),
             })
+          const resolvedCoverImage =
+            meta.coverImage && !/^[a-z][a-z0-9+.-]*:\/\//i.test(meta.coverImage) && !meta.coverImage.startsWith('/')
+              ? (await processNoteImage(meta.coverImage, noteDir))?.src ?? meta.coverImage
+              : meta.coverImage
           const note: Note = {
             ...meta,
+            coverImage: resolvedCoverImage,
             body: html,
             headings,
             outgoingLinks,
