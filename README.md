@@ -17,7 +17,7 @@ Onvu (On-View) is a developer-focused, multi-locale website template that combin
 ### 1. Project Initialization
 ```bash
 # Clone the repository
-git clone https://github.com/onvu/template.git my-site
+git clone https://github.com/y9vad9/onvu.git my-site
 cd my-site
 
 # Rename remotes to pull upstream updates easily
