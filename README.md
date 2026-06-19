@@ -1,6 +1,6 @@
 # Onvu
 
-Onvu is a developer-focused, multi-locale website template that combines a structured portfolio homepage with an interconnected digital knowledge garden. Built with Next.js 15, TypeScript, Tailwind CSS, and Zustand, it provides a high-performance, responsive layout designed to serve as a customizable personal space.
+Onvu (On-View) is a developer-focused, multi-locale website template that combines a structured portfolio homepage with an interconnected digital knowledge garden. Built with Next.js 15, TypeScript, Tailwind CSS, and Zustand, it provides a high-performance, responsive layout designed to serve as a customizable personal space.
 
 ## Key Features
 - **Dual-Mode System**: A clean, single-page resume portfolio (work history, project list, education, featured writings) combined with a deep knowledge garden.
@@ -10,6 +10,7 @@ Onvu is a developer-focused, multi-locale website template that combines a struc
 - **Fuzzy Search & Command Palette**: Interactive keyboard-driven palette (`/` or double `Shift`) synchronized with browser query parameters, enabling deep search across writing content, themes, and locale switching.
 - **Persistent Themes**: Seamless switching across five states (Light, Dark, Warm, Forest, and System) with zero flash of unstyled content (FOUC).
 - **Multi-Locale**: English, German, and Ukrainian localizations supported out-of-the-box, generating locale-prefixed routes, localized sitemaps, metadata tags, and per-locale RSS feeds.
+- **Rich Markdown Support**: LaTeX, Mermaid, WikiLinks, Videos, Image Carousels and many more!
 
 ## Quick Start
 
@@ -139,4 +140,3 @@ git merge upstream/main
 ```
 
 Because of the `merge=ours` policies in `.gitattributes`, your files under `content/` and `site.config.ts` will merge cleanly without risk of loss.
-

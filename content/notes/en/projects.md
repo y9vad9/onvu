@@ -7,7 +7,7 @@ parents: []
 
 ## Onvu
 
-A personal portfolio and digital garden template. Built with Next.js 15, following Hexagonal Architecture. The core design goal: make it easy to clone, customise, and pull upstream improvements without conflicts. Check [[Template Reference]] for capabilities.
+A personal portfolio and digital garden template. Built with Next.js 15, following Hexagonal Architecture. The core design goal: make it easy to clone, customise, and pull upstream improvements without conflicts. Check [[Template Reference]] for capabilities
 
 **Stack:** Next.js 15, TypeScript, Tailwind CSS, Zustand, Fuse.js, react-force-graph-2d
 
