@@ -1,0 +1,132 @@
+{
+  "nav": {
+    "writing": "Schreiben",
+    "work": "Arbeit",
+    "about": "Über mich",
+    "viewAllNotes": "Alle Notizen anzeigen",
+    "workExperience": "Berufserfahrung",
+    "projects": "Projekte",
+    "codeProfile": "Code-Profil",
+    "summary": "Zusammenfassung",
+    "interests": "Interessen",
+    "pronunciation": "Aussprache"
+  },
+  "header": {
+    "searchPlaceholder": "Suchen…",
+    "searchHint": "/ drücken zum Suchen"
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "warm": "Warm",
+    "forest": "Wald",
+    "system": "System / Gerät"
+  },
+  "language": {
+    "en": "English",
+    "de": "Deutsch",
+    "uk": "Українська"
+  },
+  "home": {
+    "summary": "Zusammenfassung",
+    "notes": "Notizen",
+    "workExperience": "Berufserfahrung",
+    "projects": "Projekte",
+    "education": "Ausbildung",
+    "techHighlights": "Technologie",
+    "focusAreas": "Schwerpunkte",
+    "quickFacts": "Kurzfakten",
+    "view": "Ansehen"
+  },
+  "garden": {
+    "welcome": "Willkommen",
+    "welcomeDescription": "Eine lebendige Sammlung von Notizen, Ideen und Verbindungen.",
+    "notes": "Notizen",
+    "connections": "Verbindungen",
+    "totalReadingTime": "Gesamte Lesezeit",
+    "min": "Min",
+    "epics": "Themen",
+    "recentNotes": "Aktuelle Notizen",
+    "knowledgeGraph": "Wissensgraph",
+    "knowledgeGraphDescription": "Erkunde alle Notizen und ihre Verbindungen visuell.",
+    "launchExplorer": "Explorer starten",
+    "noNotesFound": "Keine Notizen gefunden",
+    "searchPlaceholder": "Notizen suchen…",
+    "filterByParents": "Nach Themen filtern",
+    "clearAll": "Alle löschen"
+  },
+  "note": {
+    "readingTime": "{minutes} Min. Lesezeit",
+    "updated": "Aktualisiert {date}",
+    "archive": "Archiv",
+    "series": "Serie",
+    "linkedMentions": "Verlinkte Erwähnungen",
+    "unlinkedMentions": "Unverlinkte Erwähnungen",
+    "backlinks": "Backlinks",
+    "outgoing": "Ausgehend",
+    "relatedNotes": "Ähnliche Notizen",
+    "noBacklinks": "Noch keine Backlinks.",
+    "noOutgoing": "Keine ausgehenden Links.",
+    "noLinkedMentions": "Noch keine verlinkten Erwähnungen.",
+    "noUnlinkedMentions": "Keine unverlinkten Erwähnungen.",
+    "copyHeading": "Link zur Überschrift kopieren",
+    "copied": "Kopiert!",
+    "copy": "Kopieren",
+    "previous": "Vorherige",
+    "next": "Nächste",
+    "sortDate": "Datum (Neueste zuerst)",
+    "sortDateAsc": "Datum (Älteste zuerst)",
+    "sortNameAsc": "Name (A–Z)",
+    "sortNameDesc": "Name (Z–A)"
+  },
+  "graph": {
+    "title": "Wissensgraph",
+    "search": "Knoten suchen…",
+    "repulsion": "Abstoßung",
+    "linkDistance": "Linkabstand",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
+    "viewFullGraph": "Vollständigen Graphen anzeigen",
+    "loading": "Graph wird geladen…"
+  },
+  "search": {
+    "placeholder": "Notizen, Seiten, Themen suchen…",
+    "navigation": "Navigation",
+    "onThisPage": "Auf dieser Seite",
+    "notes": "Notizen",
+    "languages": "Sprachen",
+    "themes": "Themen",
+    "noResults": "Keine Ergebnisse",
+    "view": "Ansehen →",
+    "moveHint": "↑ ↓ zum Bewegen",
+    "selectHint": "Eingabe zum Auswählen"
+  },
+  "explorer": {
+    "files": "Dateien",
+    "search": "Suche",
+    "searchPlaceholder": "In Notizen suchen…",
+    "filterByName": "Nach Name filtern…",
+    "noResults": "Keine Ergebnisse gefunden"
+  },
+  "panel": {
+    "toc": "Inhalt",
+    "series": "Serie",
+    "links": "Links",
+    "graph": "Graph",
+    "noSeries": "Diese Notiz gehört zu keiner Serie.",
+    "noToc": "Keine Überschriften auf dieser Seite.",
+    "noLinks": "Keine Verknüpfungen vorhanden.",
+    "noGraph": "Hier ist kein Graph verfügbar.",
+    "openGlobalGraph": "Globalen Graphen öffnen"
+  },
+  "comments": {
+    "title": "Kommentare"
+  },
+  "footer": {
+    "copyright": "© {year} {name}. Alle Rechte vorbehalten."
+  },
+  "error": {
+    "notFound": "Seite nicht gefunden",
+    "notFoundDescription": "Die gesuchte Seite existiert nicht."
+  }
+}

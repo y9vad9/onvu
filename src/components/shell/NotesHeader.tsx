@@ -1,0 +1,278 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
+import {
+  PanelLeft,
+  PanelRight,
+  Files,
+  Search,
+  Home,
+  Sprout,
+  Sun,
+  Moon,
+  Coffee,
+  Trees,
+  Monitor,
+  Globe,
+  Network,
+  List,
+  BookOpen,
+  Link2,
+} from 'lucide-react'
+import { usePanelStore, type ExplorerMode, type ToolsMode } from '@store/panelStore'
+import { useThemeStore, type Theme } from '@store/themeStore'
+import { useNoteContextStore } from '@store/noteContextStore'
+import { useTabStore } from '@store/tabStore'
+import { useSearchStore } from '@store/searchStore'
+import { useIsMobile } from '@hooks/useMediaQuery'
+import { TabBar } from '@components/garden/TabBar'
+import { RouteLink } from '@components/garden/RouteLink'
+import { INDEX_TAB_SLUG, GRAPH_TAB_SLUG } from '@store/tabStore'
+import { LOCALES } from '@i18n/routing'
+import type { Locale } from '@config/site'
+import { useLocaleLabel } from '@hooks/useLocaleLabel'
+import { useState } from 'react'
+
+const THEME_ICONS: Record<Theme, React.ReactNode> = {
+  light: <Sun size={14} />,
+  dark: <Moon size={14} />,
+  warm: <Coffee size={14} />,
+  forest: <Trees size={14} />,
+  system: <Monitor size={14} />,
+}
+
+const EXPLORER_MODES: Array<{ mode: ExplorerMode; icon: React.ReactNode; titleKey: 'files' | 'search'; hint: string }> = [
+  { mode: 'files', icon: <Files size={14} />, titleKey: 'files', hint: 'E' },
+  { mode: 'search', icon: <Search size={14} />, titleKey: 'search', hint: 'F' },
+]
+
+const TOOLS_MODES: Array<{ mode: ToolsMode; icon: React.ReactNode; titleKey: 'toc' | 'series' | 'links' | 'graph'; hint: string }> = [
+  { mode: 'toc', icon: <List size={14} />, titleKey: 'toc', hint: 'T' },
+  { mode: 'series', icon: <BookOpen size={14} />, titleKey: 'series', hint: 'S' },
+  { mode: 'links', icon: <Link2 size={14} />, titleKey: 'links', hint: 'L' },
+  { mode: 'graph', icon: <Network size={14} />, titleKey: 'graph', hint: 'G' },
+]
+
+export function NotesHeader() {
+  const tTheme = useTranslations('theme')
+  const langLabel = useLocaleLabel()
+  const tExplorer = useTranslations('explorer')
+  const tPanel = useTranslations('panel')
+  const tCommand = useTranslations('search')
+  const tGarden = useTranslations('garden')
+  const locale = useLocale() as Locale
+  const {
+    leftOpen,
+    rightOpen,
+    explorerMode,
+    toolsMode,
+    toggleLeft,
+    toggleRight,
+    setExplorerMode,
+    setToolsMode,
+  } = usePanelStore()
+  const { theme, cycleTheme } = useThemeStore()
+  const { series } = useNoteContextStore()
+  const tabsCount = useTabStore((s) => s.tabs.length)
+  const openSearch = useSearchStore((s) => s.open)
+  const isMobile = useIsMobile()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [langOpen, setLangOpen] = useState(false)
+
+  function switchLocale(target: Locale) {
+    setLangOpen(false)
+    if (target === locale) return
+    const next = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${target}`)
+    router.push(next)
+  }
+
+  // On mobile both panels overlay the content as drawers, so they're mutually
+  // exclusive — opening one closes the other.
+  function onToggleLeft() {
+    if (isMobile && !leftOpen && rightOpen) toggleRight()
+    toggleLeft()
+  }
+  function onToggleRight() {
+    if (isMobile && !rightOpen && leftOpen) toggleLeft()
+    toggleRight()
+  }
+
+  return (
+    <header className="h-11 bg-shell flex items-center gap-1 px-2 flex-shrink-0 z-40 sticky top-0">
+      {/* Left panel toggle + its section buttons (when open) */}
+      <button
+        onClick={onToggleLeft}
+        className={`p-1.5 rounded hover:bg-card-hover transition-colors ${leftOpen ? 'text-primary' : 'text-muted'}`}
+        aria-label="Toggle explorer"
+        title="Toggle Explorer (⌘[)"
+      >
+        <PanelLeft size={16} />
+      </button>
+
+      {leftOpen && (
+        <>
+          <Divider />
+          {EXPLORER_MODES.map(({ mode, icon, titleKey, hint }) => (
+            <HeaderModeButton
+              key={mode}
+              active={explorerMode === mode}
+              onClick={() => setExplorerMode(mode)}
+              title={`${tExplorer(titleKey)} (${hint})`}
+              icon={icon}
+            />
+          ))}
+          <Divider />
+        </>
+      )}
+
+      {/* Primary navigation */}
+      <Link
+        href={`/${locale}`}
+        className="p-1.5 rounded hover:bg-card-hover text-muted hover:text-fg transition-colors"
+        title="Home"
+        aria-label="Home"
+      >
+        <Home size={15} />
+      </Link>
+      <RouteLink
+        href={`/${locale}/notes`}
+        routeSlug={INDEX_TAB_SLUG}
+        routeTitle={tGarden('welcome')}
+        routeKind="index"
+        className="p-1.5 rounded hover:bg-card-hover text-muted hover:text-fg transition-colors"
+        title="Garden"
+        aria-label="Garden"
+      >
+        <Sprout size={15} />
+      </RouteLink>
+      <RouteLink
+        href={`/${locale}/notes/graph`}
+        routeSlug={GRAPH_TAB_SLUG}
+        routeTitle={tGarden('knowledgeGraph')}
+        routeKind="graph"
+        className="p-1.5 rounded hover:bg-card-hover text-muted hover:text-fg transition-colors"
+        title="Knowledge Graph"
+        aria-label="Knowledge Graph"
+      >
+        <Network size={15} />
+      </RouteLink>
+
+      {/* Center: search trigger (when there are 0 or 1 tabs) or tab bar. */}
+      <div className="flex-1 overflow-hidden mx-2 flex items-center justify-center min-w-0">
+        {tabsCount >= 2 ? (
+          <div className="flex-1 overflow-hidden min-w-0">
+            <TabBar />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => openSearch()}
+            className="w-full max-w-sm flex items-center gap-2 h-7 px-3 rounded-full bg-card-hover border border-border text-muted hover:text-fg hover:border-primary/40 transition-colors text-xs"
+            aria-label="Open command palette"
+          >
+            <Search size={12} className="flex-shrink-0" />
+            <span className="flex-1 text-left truncate">
+              {tCommand('placeholder')}
+            </span>
+            <span className="flex-shrink-0 px-1.5 py-px text-[10px] font-mono border border-border rounded text-muted">
+              /
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* Theme + Lang */}
+      <button
+        onClick={cycleTheme}
+        className="p-1.5 rounded hover:bg-card-hover text-muted hover:text-fg transition-colors"
+        aria-label={`Theme: ${tTheme(theme)}`}
+        title={tTheme(theme)}
+      >
+        {THEME_ICONS[theme]}
+      </button>
+
+      <div className="relative">
+        <button
+          onClick={() => setLangOpen((v) => !v)}
+          className="p-1.5 rounded hover:bg-card-hover text-muted hover:text-fg transition-colors"
+          aria-label="Switch language"
+        >
+          <Globe size={15} />
+        </button>
+        {langOpen && (
+          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-28">
+            {LOCALES.map((l) => (
+              <button
+                key={l}
+                onClick={() => switchLocale(l)}
+                className={`w-full px-3 py-2 text-xs text-left hover:bg-card-hover transition-colors ${l === locale ? 'text-primary font-medium' : 'text-fg'}`}
+              >
+                {langLabel(l)}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Right panel section buttons (when open), then divider, then collapse */}
+      {rightOpen && (
+        <>
+          <Divider />
+          {TOOLS_MODES.filter(({ mode }) => mode !== 'series' || !!series).map(({ mode, icon, titleKey, hint }) => (
+            <HeaderModeButton
+              key={mode}
+              active={toolsMode === mode}
+              onClick={() => setToolsMode(mode)}
+              title={`${tPanel(titleKey)} (${hint})`}
+              icon={icon}
+            />
+          ))}
+          <Divider />
+        </>
+      )}
+
+      <button
+        onClick={onToggleRight}
+        className={`p-1.5 rounded hover:bg-card-hover transition-colors ${rightOpen ? 'text-primary' : 'text-muted'}`}
+        aria-label="Toggle tools"
+        title="Toggle Tools (⌘])"
+      >
+        <PanelRight size={16} />
+      </button>
+    </header>
+  )
+}
+
+function Divider() {
+  return <div className="w-px h-5 bg-border mx-1 flex-shrink-0" aria-hidden="true" />
+}
+
+function HeaderModeButton({
+  active,
+  onClick,
+  title,
+  icon,
+}: {
+  active: boolean
+  onClick: () => void
+  title: string
+  icon: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className={`p-1.5 rounded transition-colors ${
+        active
+          ? 'bg-primary-muted text-primary'
+          : 'text-muted hover:bg-card-hover hover:text-fg'
+      }`}
+    >
+      {icon}
+    </button>
+  )
+}

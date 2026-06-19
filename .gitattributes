@@ -1,0 +1,8 @@
+# User-owned paths — their version always wins on `git merge upstream`.
+# Anything under `content/` (notes, navigation, landing composition,
+# assets, translations) is treated as the template consumer's project.
+content/**                   merge=ours
+site.config.ts               merge=ours
+
+# Normalise line endings
+* text=auto

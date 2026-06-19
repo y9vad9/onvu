@@ -1,0 +1,132 @@
+{
+  "nav": {
+    "writing": "Статті",
+    "work": "Робота",
+    "about": "Про мене",
+    "viewAllNotes": "Усі нотатки",
+    "workExperience": "Досвід роботи",
+    "projects": "Проєкти",
+    "codeProfile": "Профіль коду",
+    "summary": "Резюме",
+    "interests": "Інтереси",
+    "pronunciation": "Вимова"
+  },
+  "header": {
+    "searchPlaceholder": "Пошук…",
+    "searchHint": "Натисніть / для пошуку"
+  },
+  "theme": {
+    "light": "Світла",
+    "dark": "Темна",
+    "warm": "Тепла",
+    "forest": "Ліс",
+    "system": "Системна"
+  },
+  "language": {
+    "en": "English",
+    "de": "Deutsch",
+    "uk": "Українська"
+  },
+  "home": {
+    "summary": "Резюме",
+    "notes": "Нотатки",
+    "workExperience": "Досвід роботи",
+    "projects": "Проєкти",
+    "education": "Освіта",
+    "techHighlights": "Технології",
+    "focusAreas": "Напрями",
+    "quickFacts": "Факти",
+    "view": "Переглянути"
+  },
+  "garden": {
+    "welcome": "Ласкаво просимо",
+    "welcomeDescription": "Жива колекція нотаток, ідей та зв'язків.",
+    "notes": "Нотатки",
+    "connections": "Зв'язки",
+    "totalReadingTime": "Загальний час читання",
+    "min": "хв",
+    "epics": "Теми",
+    "recentNotes": "Останні нотатки",
+    "knowledgeGraph": "Граф знань",
+    "knowledgeGraphDescription": "Досліджуйте всі нотатки та їх зв'язки візуально.",
+    "launchExplorer": "Відкрити провідник",
+    "noNotesFound": "Нотатки не знайдено",
+    "searchPlaceholder": "Пошук нотаток…",
+    "filterByParents": "Фільтр за темами",
+    "clearAll": "Очистити все"
+  },
+  "note": {
+    "readingTime": "{minutes} хв читання",
+    "updated": "Оновлено {date}",
+    "archive": "Архів",
+    "series": "Серія",
+    "linkedMentions": "Прямі згадки",
+    "unlinkedMentions": "Непрямі згадки",
+    "backlinks": "Зворотні посилання",
+    "outgoing": "Вихідні",
+    "relatedNotes": "Пов'язані нотатки",
+    "noBacklinks": "Ще немає зворотних посилань.",
+    "noOutgoing": "Немає вихідних посилань.",
+    "noLinkedMentions": "Ще немає прямих згадок.",
+    "noUnlinkedMentions": "Немає непрямих згадок.",
+    "copyHeading": "Скопіювати посилання на заголовок",
+    "copied": "Скопійовано!",
+    "copy": "Копіювати",
+    "previous": "Попередня",
+    "next": "Наступна",
+    "sortDate": "Дата (нові спочатку)",
+    "sortDateAsc": "Дата (старі спочатку)",
+    "sortNameAsc": "Назва (А–Я)",
+    "sortNameDesc": "Назва (Я–А)"
+  },
+  "graph": {
+    "title": "Граф знань",
+    "search": "Пошук вузлів…",
+    "repulsion": "Відштовхування",
+    "linkDistance": "Відстань зв'язків",
+    "fullscreen": "На весь екран",
+    "exitFullscreen": "Вийти з повноекранного",
+    "viewFullGraph": "Переглянути повний граф",
+    "loading": "Завантаження графа…"
+  },
+  "search": {
+    "placeholder": "Пошук нотаток, сторінок, тем…",
+    "navigation": "Навігація",
+    "onThisPage": "На цій сторінці",
+    "notes": "Нотатки",
+    "languages": "Мови",
+    "themes": "Теми",
+    "noResults": "Немає результатів",
+    "view": "Переглянути →",
+    "moveHint": "↑ ↓ для переміщення",
+    "selectHint": "Enter для вибору"
+  },
+  "explorer": {
+    "files": "Файли",
+    "search": "Пошук",
+    "searchPlaceholder": "Пошук у нотатках…",
+    "filterByName": "Фільтр за назвою…",
+    "noResults": "Результатів не знайдено"
+  },
+  "panel": {
+    "toc": "Зміст",
+    "series": "Серія",
+    "links": "Посилання",
+    "graph": "Граф",
+    "noSeries": "Ця нотатка не є частиною серії.",
+    "noToc": "На цій сторінці немає заголовків.",
+    "noLinks": "Немає посилань для показу.",
+    "noGraph": "Тут немає графа.",
+    "openGlobalGraph": "Відкрити повний граф"
+  },
+  "comments": {
+    "title": "Коментарі"
+  },
+  "footer": {
+    "copyright": "© {year} {name}. Всі права захищено."
+  },
+  "error": {
+    "notFound": "Сторінку не знайдено",
+    "notFoundDescription": "Сторінка, яку ви шукаєте, не існує."
+  }
+}

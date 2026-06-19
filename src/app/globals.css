@@ -1,0 +1,691 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* KaTeX styles — required to hide the raw TeX `<annotation>` fallback that
+   `rehype-katex` emits alongside the rendered HTML for accessibility. */
+@import 'katex/dist/katex.min.css';
+
+/* User theme overrides are loaded from `content/theme.css` in `layout.tsx`
+   AFTER this file, so anything declared there wins over the defaults below. */
+
+/* ── Theme: Light (default) ─────────────────────────────────────────── */
+:root,
+.theme-light {
+  --bg: #f7f7f9;
+  --shell-bg: #fcfcfd;
+  --fg: #1a1a1a;
+  --primary: #7c3aed;
+  --primary-muted: #ede9fe;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --card: #ffffff;
+  --card-hover: #f9fafb;
+  --code-bg: #f3f4f6;
+  --selection: #ddd6fe;
+}
+
+/* ── Theme: Dark ─────────────────────────────────────────────────────── */
+.theme-dark {
+  --bg: #0e0e10;
+  --shell-bg: #161618;
+  --fg: #f5f5f5;
+  --primary: #a78bfa;
+  --primary-muted: #2e1065;
+  --muted: #9ca3af;
+  --border: #27272a;
+  --card: #0a0a0a;
+  --card-hover: #111111;
+  --code-bg: #18181b;
+  --selection: #4c1d95;
+}
+
+/* ── Theme: Warm ─────────────────────────────────────────────────────── */
+.theme-warm {
+  --bg: #2a221a;
+  --shell-bg: #322a20;
+  --fg: #f5e6d3;
+  --primary: #f59e0b;
+  --primary-muted: #451a03;
+  --muted: #a8956a;
+  --border: #4a3728;
+  --card: #3a2e24;
+  --card-hover: #453826;
+  --code-bg: #251e17;
+  --selection: #92400e;
+}
+
+/* ── Theme: Forest ───────────────────────────────────────────────────── */
+.theme-forest {
+  --bg: #091610;
+  --shell-bg: #102016;
+  --fg: #d1fae5;
+  --primary: #4ade80;
+  --primary-muted: #052e16;
+  --muted: #6ee7b7;
+  --border: #134e24;
+  --card: #0f2318;
+  --card-hover: #152d1e;
+  --code-bg: #071a0e;
+  --selection: #14532d;
+}
+
+/* ── Theme: System (follows OS preference) ───────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .theme-system {
+    --bg: #f7f7f9;
+    --shell-bg: #fcfcfd;
+    --fg: #1a1a1a;
+    --primary: #7c3aed;
+    --primary-muted: #ede9fe;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #ffffff;
+    --card-hover: #f9fafb;
+    --code-bg: #f3f4f6;
+    --selection: #ddd6fe;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-system {
+    --bg: #0e0e10;
+    --shell-bg: #161618;
+    --fg: #f5f5f5;
+    --primary: #a78bfa;
+    --primary-muted: #2e1065;
+    --muted: #9ca3af;
+    --border: #27272a;
+    --card: #0a0a0a;
+    --card-hover: #111111;
+    --code-bg: #18181b;
+    --selection: #4c1d95;
+  }
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background-color: var(--selection);
+}
+
+/* ── Typography ──────────────────────────────────────────────────────── */
+.prose {
+  max-width: 68ch;
+  line-height: 1.6;
+  color: var(--fg);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+  position: relative;
+}
+
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+.prose h4 { font-size: 1.125rem; }
+
+.prose h1 .anchor-link,
+.prose h2 .anchor-link,
+.prose h3 .anchor-link,
+.prose h4 .anchor-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.prose h1:hover .anchor-icon,
+.prose h2:hover .anchor-icon,
+.prose h3:hover .anchor-icon,
+.prose h4:hover .anchor-icon {
+  opacity: 1;
+}
+
+.anchor-icon {
+  opacity: 0;
+  margin-left: 0.4em;
+  font-size: 0.8em;
+  color: var(--muted);
+  transition: opacity 0.2s;
+  vertical-align: middle;
+}
+
+.prose p {
+  margin-bottom: 0.8em;
+}
+
+.prose p + p {
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+
+.prose a:hover {
+  opacity: 0.8;
+}
+
+/* External links get a trailing arrow icon. Use an inline-block mask of a
+   lucide-style SVG so the glyph inherits text colour and scales with the
+   surrounding font. Kept separate from `::after` text so screen readers
+   don't dictate "↗" — the aria-hidden span is empty visual decoration. */
+.prose a.external-link::after {
+  content: '';
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 0.2em;
+  vertical-align: 0.05em;
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M7 17L17 7'/><path d='M8 7h9v9'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M7 17L17 7'/><path d='M8 7h9v9'/></svg>");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  opacity: 0.75;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--primary);
+  padding: 0.5em 1em;
+  margin: 1.5em 0;
+  background: var(--primary-muted);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose ul {
+  list-style: disc;
+  padding-left: 1.5em;
+  margin-bottom: 0.8em;
+}
+
+.prose ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+  margin-bottom: 0.8em;
+}
+
+.prose li {
+  margin-bottom: 0.15em;
+}
+
+.prose li > p {
+  margin-bottom: 0.3em;
+}
+
+/* ── Code ────────────────────────────────────────────────────────────── */
+.prose code:not(pre code) {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875em;
+  background: var(--primary-muted);
+  color: var(--primary);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.prose pre {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 1.5em 0;
+  border: 1px solid var(--border);
+}
+
+.prose pre code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875em;
+  display: block;
+  overflow-x: auto;
+  padding: 1rem 1.25rem;
+  line-height: 1.7;
+  background: var(--code-bg) !important;
+}
+
+/* ── Syntax highlighting (rehype-pretty-code / Shiki) ─────────────────
+   We compile both light and dark themes into the markup as CSS vars
+   per token (`--shiki-light`, `--shiki-dark`). Pick the right set per
+   active theme — light uses github-light; dark/warm/forest use
+   github-dark; system follows OS preference. */
+.prose pre code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+.theme-dark .prose pre code span,
+.theme-warm .prose pre code span,
+.theme-forest .prose pre code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+@media (prefers-color-scheme: dark) {
+  .theme-system .prose pre code span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+}
+
+/* Highlighted / focused lines (rehype-pretty-code `data-highlighted-line`,
+   `data-highlighted-chars`). */
+.prose pre code [data-highlighted-line] {
+  background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+  display: inline-block;
+  width: 100%;
+}
+.prose pre code mark[data-highlighted-chars] {
+  background-color: color-mix(in srgb, var(--primary) 18%, transparent);
+  border-radius: 0.2em;
+  padding: 0 0.15em;
+}
+
+/* Language label (data-language is added by rehype-pretty-code). */
+.prose figure[data-rehype-pretty-code-figure] {
+  position: relative;
+  margin: 1.5em 0;
+}
+.prose figure[data-rehype-pretty-code-figure] pre {
+  margin: 0;
+}
+.prose figure[data-rehype-pretty-code-figure] figcaption[data-rehype-pretty-code-title] {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0.5rem 1rem;
+  background: var(--card-hover);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+}
+.prose figure[data-rehype-pretty-code-figure] figcaption[data-rehype-pretty-code-title] + pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.prose pre[data-language] {
+  /* Reserve a strip at the top so the label sits above the code, not on it. */
+  padding-top: 2.25rem;
+}
+.prose pre[data-language] code {
+  padding-top: 0.75rem;
+}
+.prose pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.5rem;
+  left: 1.25rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Code copy button (injected by ArticleEnhancer) */
+.code-copy-btn {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.65rem;
+  font-family: var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 120ms ease, color 120ms ease, border-color 120ms ease;
+  z-index: 2;
+}
+
+.prose pre:hover .code-copy-btn,
+.code-copy-btn:focus-visible {
+  opacity: 1;
+}
+
+.code-copy-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.code-copy-btn.copied {
+  color: var(--primary);
+  border-color: var(--primary);
+  opacity: 1;
+}
+
+/* code block title bar (rehype-pretty-code) */
+[data-rehype-pretty-code-figure] {
+  position: relative;
+}
+
+[data-rehype-pretty-code-title] {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  padding: 0.4rem 1rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+[data-rehype-pretty-code-title] + pre {
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.9em;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose th {
+  background: var(--card);
+  font-weight: 600;
+}
+
+.prose tr:hover td {
+  background: var(--card-hover);
+}
+
+/* ── Images ──────────────────────────────────────────────────────────── */
+.prose img {
+  border-radius: 0.75rem;
+  max-width: 100%;
+  height: auto;
+  cursor: zoom-in;
+}
+
+/* Inline images — `![](… ?inline)` in a note. Sized to match adjacent text
+   so emoji-like glyphs (reaction GIFs, signs, sigils) sit on the baseline.
+   No rounded corners or zoom cursor since they're text-flow ornaments. */
+.prose img.inline-image {
+  display: inline-block;
+  height: 1.5em;
+  width: auto;
+  max-width: none;
+  vertical-align: -0.35em;
+  border-radius: 0;
+  cursor: inherit;
+  margin: 0 0.15em;
+}
+
+/* Note videos — `![caption](demo.mp4)` rewritten by the rehype pipeline. */
+.prose video.note-video {
+  display: block;
+  border-radius: 0.75rem;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  margin: 1.25em 0;
+  background: var(--code-bg);
+}
+
+/* ── Carousel (image-only table converted by rehype plugin) ──────────── */
+.prose .carousel {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin: 1.5em 0;
+  scrollbar-width: thin;
+}
+
+.prose .carousel img {
+  flex: 0 0 auto;
+  height: 220px;
+  width: auto;
+  object-fit: cover;
+}
+
+/* ── Math (KaTeX) ────────────────────────────────────────────────────── */
+.katex-display {
+  overflow-x: auto;
+  padding: 0.5em 0;
+}
+
+/* ── Reading progress bar ────────────────────────────────────────────── */
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 0%;
+  background: linear-gradient(to right, #4ade80, var(--primary));
+  z-index: 9999;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+/* Hide the scrollbar on the notes body so the rounded card reads clean. */
+#notes-scroll {
+  scrollbar-width: none;
+}
+#notes-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Panel list item — shared hover/active treatment for side-panel arrays
+       (file tree, search results, TOC, series, backlinks, outgoing). */
+.panel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  margin: 0.0625rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--fg);
+  border-radius: 0.5rem;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panel-item:hover {
+  background-color: var(--card-hover);
+  transform: translateX(2px);
+}
+.panel-item.is-active {
+  background-color: color-mix(in srgb, var(--primary-muted) 60%, transparent);
+  color: var(--primary);
+  font-weight: 500;
+}
+.panel-item.is-muted {
+  color: var(--muted);
+}
+
+/* Keyboard-focused item — only rendered while focus lives inside a
+   `.kbd-section` wrapper (the input that forwards keys or the list itself).
+   When the user clicks elsewhere or tabs away, the highlight disappears. */
+.kbd-section:focus-within .panel-item.is-kbd,
+.kbd-section:focus-within .panel-item-block.is-kbd {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: -2px;
+}
+.kbd-section:focus-within .panel-item-block.is-active {
+  background-color: var(--card-hover);
+  transform: translateX(2px);
+}
+
+/* Multi-line block variant (e.g. search result with title + preview). */
+.panel-item-block {
+  display: block;
+  padding: 0.5rem 0.625rem;
+  margin: 0.125rem 0.5rem;
+  color: var(--fg);
+  border-radius: 0.5rem;
+  transition: background-color 120ms ease, transform 120ms ease;
+  text-decoration: none;
+}
+.panel-item-block:hover {
+  background-color: var(--card-hover);
+  transform: translateX(2px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes graphLoadingSlide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.graph-loading-bar {
+  animation: graphLoadingSlide 1.1s ease-in-out infinite;
+}
+
+/* Keep headings clear of the sticky notes header when the browser jumps to
+   an anchor like `#section-id`. */
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  scroll-margin-top: 4rem;
+}
+
+/* ── Mermaid diagrams ─────────────────────────────────────────────────── */
+.prose .mermaid {
+  margin: 1.5em 0;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  text-align: center;
+  min-height: 2.5rem;
+}
+.prose .mermaid:not([data-rendered]) {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.prose .mermaid:not([data-rendered])::before {
+  content: 'Rendering diagram…';
+}
+.prose .mermaid svg {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+.prose .mermaid .mermaid-error {
+  text-align: left;
+  color: #ef4444;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+/* ── Wiki links (`[[Target]]`) ────────────────────────────────────────── */
+.prose a.wikilink {
+  color: var(--primary);
+  border-bottom: 1px dashed color-mix(in srgb, var(--primary) 50%, transparent);
+  text-decoration: none;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  padding: 0 0.15em;
+  border-radius: 2px;
+}
+.prose a.wikilink:hover {
+  background-color: var(--primary-muted);
+  border-bottom-color: var(--primary);
+}
+.prose a.wikilink-broken {
+  color: var(--muted);
+  border-bottom-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+.prose a.wikilink-broken:hover {
+  background-color: transparent;
+  cursor: not-allowed;
+}
+
+/* ── Search highlight (deep content search) ──────────────────────────── */
+mark.search-hit {
+  background: var(--primary-muted);
+  color: var(--primary);
+  border-radius: 0.2em;
+  padding: 0.05em 0.2em;
+}
+
+mark.search-hit.blink {
+  animation: search-blink 0.15s 2 alternate;
+}
+
+/* The specific occurrence the user selected in the deep-search results. */
+mark.search-hit.search-hit-active {
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+@keyframes search-blink {
+  from { background: var(--primary); color: var(--bg); }
+  to   { background: var(--primary-muted); color: var(--primary); }
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

@@ -1,0 +1,53 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  # Manual trigger only (disabled by default)
+  workflow_dispatch:
+  
+  # Uncomment the trigger below to automate deployments on push to main
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+
+      - name: Restore Next.js Build Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: Restore Notes Compressed Assets Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            public/notes-assets
+          key: ${{ runner.os }}-notes-assets-${{ hashFiles('content/notes/**/*.md', 'content/notes/**/*.png', 'content/notes/**/*.jpg', 'content/notes/**/*.jpeg', 'content/notes/**/*.svg') }}
+          restore-keys: |
+            ${{ runner.os }}-notes-assets-
+
+      - run: npm ci
+      
+      - run: npm run build
+      
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy out --project-name=y9vad9-site
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

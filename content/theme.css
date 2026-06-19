@@ -1,0 +1,34 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * Theme overrides — user-owned.
+ *
+ * This file is loaded AFTER the framework's default theme palettes in
+ * `src/app/globals.css`, so anything you declare here wins.
+ *
+ * 1. Override a single token across all themes:
+ *
+ *      :root { --primary: #ff0080; }
+ *
+ * 2. Override per built-in theme (light / dark / warm / forest):
+ *
+ *      .theme-light { --primary: #ec4899; --primary-muted: #fce7f3; }
+ *
+ * 3. Ship a brand-new theme. Add it to `themes` in `site.config.ts`:
+ *
+ *      themes: [
+ *        { id: 'light' }, { id: 'dark' }, { id: 'system' },
+ *        { id: 'ocean', label: 'ocean', icon: 'Waves' },
+ *      ]
+ *
+ *    Then declare its tokens here:
+ *
+ *      .theme-ocean {
+ *        --bg: #0c1e2e; --shell-bg: #0f2638; --fg: #e0f2fe;
+ *        --primary: #38bdf8; --primary-muted: #082f49;
+ *        --muted: #7dd3fc; --border: #155e75;
+ *        --card: #0f2638; --card-hover: #143049;
+ *        --code-bg: #08172a; --selection: #0369a1;
+ *      }
+ *
+ *    Add a matching `theme.ocean` translation in `content/i18n/<locale>.json`
+ *    if you want a localised label, otherwise the literal `label` is used.
+ * ───────────────────────────────────────────────────────────────────── */

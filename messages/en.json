@@ -1,0 +1,132 @@
+{
+  "nav": {
+    "writing": "Writing",
+    "work": "Work",
+    "about": "About",
+    "viewAllNotes": "View All Notes",
+    "workExperience": "Work Experience",
+    "projects": "Projects",
+    "codeProfile": "Code Profile",
+    "summary": "Summary",
+    "interests": "Interests",
+    "pronunciation": "Pronunciation"
+  },
+  "header": {
+    "searchPlaceholder": "Search…",
+    "searchHint": "Press / to search"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "warm": "Warm",
+    "forest": "Forest",
+    "system": "System / Device"
+  },
+  "language": {
+    "en": "English",
+    "de": "Deutsch",
+    "uk": "Українська"
+  },
+  "home": {
+    "summary": "Summary",
+    "notes": "Notes",
+    "workExperience": "Work Experience",
+    "projects": "Projects",
+    "education": "Education",
+    "techHighlights": "Tech Highlights",
+    "focusAreas": "Focus Areas",
+    "quickFacts": "Quick Facts",
+    "view": "View"
+  },
+  "garden": {
+    "welcome": "Welcome",
+    "welcomeDescription": "A living collection of notes, ideas, and connections.",
+    "notes": "Notes",
+    "connections": "Connections",
+    "totalReadingTime": "Total reading time",
+    "min": "min",
+    "epics": "Epics",
+    "recentNotes": "Recent Notes",
+    "knowledgeGraph": "Knowledge Graph",
+    "knowledgeGraphDescription": "Explore all notes and their connections visually.",
+    "launchExplorer": "Launch Explorer",
+    "noNotesFound": "No notes found",
+    "searchPlaceholder": "Search notes…",
+    "filterByParents": "Filter by parents",
+    "clearAll": "Clear All"
+  },
+  "note": {
+    "readingTime": "{minutes} min read",
+    "updated": "Updated {date}",
+    "archive": "Archive",
+    "series": "Series",
+    "linkedMentions": "Linked Mentions",
+    "unlinkedMentions": "Unlinked Mentions",
+    "backlinks": "Backlinks",
+    "outgoing": "Outgoing",
+    "relatedNotes": "Related Notes",
+    "noBacklinks": "No backlinks yet.",
+    "noOutgoing": "No outgoing links.",
+    "noLinkedMentions": "No linked mentions yet.",
+    "noUnlinkedMentions": "No unlinked mentions.",
+    "copyHeading": "Copy link to heading",
+    "copied": "Copied!",
+    "copy": "Copy",
+    "previous": "Previous",
+    "next": "Next",
+    "sortDate": "Date (Newest first)",
+    "sortDateAsc": "Date (Oldest first)",
+    "sortNameAsc": "Name (A–Z)",
+    "sortNameDesc": "Name (Z–A)"
+  },
+  "graph": {
+    "title": "Knowledge Graph",
+    "search": "Search nodes…",
+    "repulsion": "Repulsion",
+    "linkDistance": "Link Distance",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen",
+    "viewFullGraph": "View Full Graph",
+    "loading": "Loading graph…"
+  },
+  "search": {
+    "placeholder": "Search notes, pages, themes…",
+    "navigation": "Navigation",
+    "onThisPage": "On This Page",
+    "notes": "Notes",
+    "languages": "Languages",
+    "themes": "Themes",
+    "noResults": "No results",
+    "view": "View →",
+    "moveHint": "↑ ↓ to move",
+    "selectHint": "Enter to select"
+  },
+  "explorer": {
+    "files": "Files",
+    "search": "Search",
+    "searchPlaceholder": "Search in notes…",
+    "filterByName": "Filter by name…",
+    "noResults": "No results found"
+  },
+  "panel": {
+    "toc": "TOC",
+    "series": "Series",
+    "links": "Links",
+    "graph": "Graph",
+    "noSeries": "This note is not part of a series.",
+    "noToc": "No headings on this page.",
+    "noLinks": "No links to show.",
+    "noGraph": "No graph available here.",
+    "openGlobalGraph": "Open Global Graph"
+  },
+  "comments": {
+    "title": "Comments"
+  },
+  "footer": {
+    "copyright": "© {year} {name}. All rights reserved."
+  },
+  "error": {
+    "notFound": "Page not found",
+    "notFoundDescription": "The page you are looking for does not exist."
+  }
+}

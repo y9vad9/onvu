@@ -1,0 +1,52 @@
+import { ImageResponse } from 'next/og'
+import { createRepository } from '@adapters/createRepositories'
+import { getNote } from '@core/GetNote'
+import { config as siteConfig } from '~/site.config'
+
+export const runtime = 'nodejs'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export const alt = 'Article preview'
+
+export default async function NoteOgImage({
+  params,
+}: {
+  params: { locale: string; slug: string }
+}) {
+  const note = await getNote(createRepository(params.locale), params.slug)
+  const title = note?.title ?? siteConfig.owner.name
+  const description = note?.description ?? note?.preview ?? siteConfig.owner.bio
+  const author = note?.author ?? siteConfig.owner.name
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 80,
+          background: '#0e0e10',
+          color: '#f5f5f5',
+          fontFamily: 'sans-serif',
+        }}
+      >
+        <div style={{ fontSize: 28, opacity: 0.7 }}>{siteConfig.owner.handle}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>{title}</div>
+          <div style={{ fontSize: 28, opacity: 0.7, maxWidth: 900, lineHeight: 1.4 }}>
+            {description}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ height: 8, width: 120, background: '#a78bfa', borderRadius: 4 }} />
+          <div style={{ fontSize: 24, opacity: 0.8 }}>{author}</div>
+        </div>
+      </div>
+    ),
+    size,
+  )
+}
