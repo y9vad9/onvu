@@ -50,6 +50,22 @@ interface ForceGraphInstance {
   zoom: (scale: number, ms?: number) => void
 }
 
+/**
+ * Push the charge + link-distance values into the live d3 simulation.
+ * Safe to call before or after the first tick — the forces are picked up
+ * by the next tick either way.
+ */
+function applyForcesTo(
+  inst: ForceGraphInstance,
+  repulsion: number,
+  linkDistance: number,
+): void {
+  const charge = inst.d3Force('charge') as { strength: (n: number) => unknown } | undefined
+  charge?.strength(-repulsion)
+  const link = inst.d3Force('link') as { distance: (n: number) => unknown } | undefined
+  link?.distance(linkDistance)
+}
+
 const EMPTY_SET: ReadonlySet<string> = new Set()
 
 export function ForceGraph({
@@ -131,18 +147,43 @@ export function ForceGraph({
     [onNodeClickAction, router, params.locale],
   )
 
-  // Apply repulsion (charge) and link distance to the live simulation.
-  // Only reheat when the actual sliders change — NOT on every render that
-  // happens to produce a new `data` reference (key presses, hover, theme).
+  // Re-apply forces when the user actually moves a slider. The first
+  // application happens in the ref callback below so the very first tick
+  // already uses our values — without that, the simulation runs its first
+  // batch of ticks with d3's defaults (charge ≈ -30) and a dense layout
+  // bakes in before this effect fires.
   useEffect(() => {
     const fg = fgRef.current
     if (!fg) return
-    const charge = fg.d3Force('charge') as { strength: (n: number) => unknown } | undefined
-    charge?.strength(-repulsion)
-    const link = fg.d3Force('link') as { distance: (n: number) => unknown } | undefined
-    link?.distance(linkDistance)
+    applyForcesTo(fg, repulsion, linkDistance)
     fg.d3ReheatSimulation()
   }, [repulsion, linkDistance])
+
+  // The simulation budget needs to scale with graph size. cooldownTime is a
+  // wall-clock cap that starts from t=0 regardless of reheats, so a fixed
+  // 3-second limit silently strangles big graphs: by the time the user
+  // sees the result the nodes are still clumped from the early high-energy
+  // phase. Tick budget scales with node count instead — every node gets a
+  // few hundred ticks to find a stable seat — and the wall-clock cap is
+  // generous enough that a sluggish device still finishes the budget.
+  const nodeCount = data.nodes.length
+  const cooldownTicks = Math.min(800, Math.max(150, nodeCount * 4))
+  const cooldownTimeMs = Math.min(30_000, Math.max(8_000, nodeCount * 80))
+
+  const setFgRef = useCallback(
+    (el: unknown) => {
+      const inst = (el as ForceGraphInstance) ?? null
+      const previouslyAttached = fgRef.current !== null
+      fgRef.current = inst
+      // On first attach (and on remount after data identity change), seed
+      // the simulation's forces synchronously so warmup / early ticks use
+      // the right values rather than d3's defaults.
+      if (inst && !previouslyAttached) {
+        applyForcesTo(inst, repulsion, linkDistance)
+      }
+    },
+    [repulsion, linkDistance],
+  )
 
   // Zoom & center on a single match. Skipped for zero or multiple matches.
   // Keyed on the singleton slug only so a fresh data identity doesn't re-zoom.
@@ -164,47 +205,22 @@ export function ForceGraph({
     return () => window.clearTimeout(id)
   }, [singleMatch])
 
-  // Asymmetric hover highlight:
-  // - downstream (descendants / outgoing links) is followed transitively
-  // - upstream (immediate parent / incoming link) is shown one hop only
-  //
-  // Edge semantics:
-  //   parent: source = child, target = parent
-  //   link:   source = referrer, target = referee
-  // So "downstream" relative to hover = IN parent-edges + OUT link-edges,
-  // and "upstream" relative to hover = OUT parent-edges + IN link-edges.
+  // Hover highlights the direct neighbourhood only — every node one edge
+  // away from the hovered node, in either direction. The previous version
+  // walked *downstream* transitively, which meant a single cross-cutting
+  // link between two parents' subtrees dragged the entire second subtree
+  // into the highlight (hover "Personal" → also light up "Programming"'s
+  // chain). One-hop keeps the signal scoped to "what's actually connected
+  // to this node?"; anything further is one hover away.
   const { highlightedNodes, highlightedEdges } = useMemo(() => {
     const nodes = new Set<string>()
     const edgeKeys = new Set<string>()
     if (!hoverId) return { highlightedNodes: nodes, highlightedEdges: edgeKeys }
-
     nodes.add(hoverId)
-    const stack = [hoverId]
-    const visited = new Set<string>([hoverId])
-    while (stack.length > 0) {
-      const cur = stack.pop()!
-      for (const edge of graph.edges) {
-        const goesDownstream =
-          (edge.type === 'parent' && edge.target === cur) ||
-          (edge.type === 'link' && edge.source === cur)
-        if (!goesDownstream) continue
-        const next = edge.type === 'parent' ? edge.source : edge.target
-        edgeKeys.add(`${edge.source}\x00${edge.target}\x00${edge.type}`)
-        if (!visited.has(next)) {
-          visited.add(next)
-          nodes.add(next)
-          stack.push(next)
-        }
-      }
-    }
-    // One-hop upstream.
     for (const edge of graph.edges) {
-      const goesUpstream =
-        (edge.type === 'parent' && edge.source === hoverId) ||
-        (edge.type === 'link' && edge.target === hoverId)
-      if (!goesUpstream) continue
-      const other = edge.type === 'parent' ? edge.target : edge.source
-      nodes.add(other)
+      if (edge.source !== hoverId && edge.target !== hoverId) continue
+      nodes.add(edge.source)
+      nodes.add(edge.target)
       edgeKeys.add(`${edge.source}\x00${edge.target}\x00${edge.type}`)
     }
     return { highlightedNodes: nodes, highlightedEdges: edgeKeys }
@@ -214,7 +230,7 @@ export function ForceGraph({
     <div ref={containerRef} style={{ width: width ?? '100%', height: height ?? '100%' }}>
       {dims && (
         <ForceGraph2D
-          ref={(el: unknown) => { fgRef.current = (el as ForceGraphInstance) ?? null }}
+          ref={setFgRef}
           graphData={data}
           width={dims.w}
           height={dims.h}
@@ -240,7 +256,8 @@ export function ForceGraph({
           onNodeHover={(node: GraphNodeData | null) => setHoverId(node?.id ?? null)}
           d3AlphaDecay={0.02}
           d3VelocityDecay={0.3}
-          cooldownTime={3000}
+          cooldownTime={cooldownTimeMs}
+          cooldownTicks={cooldownTicks}
           enableNodeDrag={false}
         />
       )}
