@@ -17,7 +17,7 @@ function localeDir(locale: Locale): string {
 
 type NoteMeta = Omit<
   Note,
-  'body' | 'headings' | 'outgoingLinks' | 'outgoingExternalLinks' | 'rawText'
+  'body' | 'headings' | 'outgoingLinks' | 'rawText'
 >
 
 function parseNoteMeta(slug: string, raw: string): NoteMeta {
@@ -116,7 +116,7 @@ export class FileSystemNoteRepository implements NoteRepository {
       const notes = await Promise.all(
         Array.from(rawByslug.entries()).map(async ([slug, { content }]) => {
           const meta = metas.get(slug)!
-          const { html, headings, outgoingLinks, outgoingExternalLinks, rawText } =
+          const { html, headings, outgoingLinks, rawText } =
             await processMarkdown(content, {
               resolveWikiLink: resolver,
               resolveImage: (ref) => processNoteImage(ref, noteDir),
@@ -132,7 +132,6 @@ export class FileSystemNoteRepository implements NoteRepository {
             body: html,
             headings,
             outgoingLinks,
-            outgoingExternalLinks,
             rawText,
           }
           return note

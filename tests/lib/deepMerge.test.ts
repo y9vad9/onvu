@@ -30,4 +30,28 @@ describe('deepMerge', () => {
     deepMerge(base, { nested: { b: 2 } })
     expect(base).toEqual({ nested: { a: 1 } })
   })
+
+  it('keeps base locale when override omits it entirely (next-intl fallback)', () => {
+    const base = {
+      en: { hello: 'Hello' },
+      uk: { hello: 'Привіт' },
+    }
+    const override = { en: { hello: 'Hi' } }
+    expect(deepMerge(base, override)).toEqual({
+      en: { hello: 'Hi' },
+      uk: { hello: 'Привіт' },
+    })
+  })
+
+  it('handles deeply nested overrides leaving siblings at every level', () => {
+    const base = {
+      en: { ns: { foo: 'foo-en', bar: 'bar-en' } },
+      uk: { ns: { foo: 'foo-uk', bar: 'bar-uk' } },
+    }
+    const override = { en: { ns: { foo: 'foo-override' } } }
+    expect(deepMerge(base, override)).toEqual({
+      en: { ns: { foo: 'foo-override', bar: 'bar-en' } },
+      uk: { ns: { foo: 'foo-uk', bar: 'bar-uk' } },
+    })
+  })
 })

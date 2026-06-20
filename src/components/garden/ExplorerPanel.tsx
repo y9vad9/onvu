@@ -9,6 +9,7 @@ import { useTabStore } from '@store/tabStore'
 import { useNoteContextStore } from '@store/noteContextStore'
 import { useListKeyboardNav } from '@hooks/useListKeyboardNav'
 import { NoteLink } from './NoteLink'
+import { buildFileTree, type FileTreeEntry } from '@lib/notes/buildFileTree'
 
 import type { SearchIndexEntry } from '@core/search/SearchIndex'
 
@@ -28,12 +29,6 @@ export interface NoteListItem {
   title: string
   series: string | null
   order: number | null
-}
-
-interface FileTreeEntry {
-  slug: string
-  displayTitle: string
-  isSeries: boolean
 }
 
 const SNIPPET_RADIUS = 60
@@ -72,31 +67,6 @@ function findOccurrences(
     occurrence += 1
   }
   return hits
-}
-
-function buildFileTree(notes: NoteListItem[]): FileTreeEntry[] {
-  const seriesMap = new Map<string, NoteListItem[]>()
-  const standalone: NoteListItem[] = []
-
-  for (const note of notes) {
-    if (note.series) {
-      if (!seriesMap.has(note.series)) seriesMap.set(note.series, [])
-      seriesMap.get(note.series)!.push(note)
-    } else {
-      standalone.push(note)
-    }
-  }
-
-  const entries: FileTreeEntry[] = []
-  for (const [name, notesInSeries] of Array.from(seriesMap.entries())) {
-    const sorted = notesInSeries.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    const first = sorted[0]
-    entries.push({ slug: first.slug, displayTitle: name, isSeries: true })
-  }
-  for (const note of standalone) {
-    entries.push({ slug: note.slug, displayTitle: note.title, isSeries: false })
-  }
-  return entries
 }
 
 export function ExplorerPanel({ notes }: { notes: NoteListItem[] }) {

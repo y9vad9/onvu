@@ -16,7 +16,9 @@ export async function getMentions(
 
   for (const other of all) {
     if (other.slug === note.slug) continue
-    const linksToNote = other.outgoingLinks.includes(note.slug)
+    const linksToNote = other.outgoingLinks.some(
+      (l) => l.kind === 'internal' && l.slug === note.slug,
+    )
     if (linksToNote) {
       linked.push(other)
       continue

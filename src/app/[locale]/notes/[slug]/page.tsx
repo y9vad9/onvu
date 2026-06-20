@@ -89,33 +89,30 @@ export default async function NotePage({
 
   const noteMap = new Map(allNotes.map((n) => [n.slug, n]))
 
-  const internalOutgoing = note.outgoingLinks.map((s) => {
-    const n = noteMap.get(s)
-    return {
-      slug: s,
-      title: n?.title ?? s,
-      isExternal: false as const,
-      href: `/${locale}/notes/${s}`,
-    }
-  })
-
-  // Resolve titles for external URLs in parallel. Each call is cached so
-  // repeated builds (or popular references cited from many notes) only hit
-  // the network once. A failed lookup falls back to a compact host+path
-  // label so the panel never shows a raw 200-character URL.
-  const externalOutgoing = await Promise.all(
-    note.outgoingExternalLinks.map(async (href) => {
-      const title = await fetchExternalTitle(href)
+  // Build the side panel's outgoing list in the same order the author wrote
+  // the links in the body. Internal entries get resolved against the note
+  // map; external ones get their <title> fetched (cached, best-effort) so
+  // the panel shows a real label rather than the URL itself.
+  const outgoing = await Promise.all(
+    note.outgoingLinks.map(async (link) => {
+      if (link.kind === 'internal') {
+        const n = noteMap.get(link.slug)
+        return {
+          slug: link.slug,
+          title: n?.title ?? link.slug,
+          isExternal: false as const,
+          href: `/${locale}/notes/${link.slug}`,
+        }
+      }
+      const title = await fetchExternalTitle(link.href)
       return {
-        slug: href,
-        title: title ?? urlLabel(href),
+        slug: link.href,
+        title: title ?? urlLabel(link.href),
         isExternal: true as const,
-        href,
+        href: link.href,
       }
     }),
   )
-
-  const outgoing = [...internalOutgoing, ...externalOutgoing]
 
   const backlinks = mentions.linked.map((n: Note) => ({ slug: n.slug, title: n.title }))
 

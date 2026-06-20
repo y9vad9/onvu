@@ -6,7 +6,8 @@ import { X } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import { useTabScrollRestore } from '@hooks/useTabScrollRestore'
 import { useTabStore } from '@store/tabStore'
-import { useNoteContextStore } from '@store/noteContextStore'
+import { getCurrentTabAnchor } from '@lib/notes/currentTabAnchor'
+import { decideWikiClickIntent } from '@lib/notes/wikiLinkClickIntent'
 
 /**
  * Adds client-side enhancements to a rendered article:
@@ -44,64 +45,56 @@ export function ArticleEnhancer({
 
     function onClick(e: Event) {
       const me = e as MouseEvent
-      // Let the browser handle modifier-less middle / right clicks normally
-      // when they're not navigations we manage.
-      const target = me.target as HTMLElement | null
-      const anchor = target?.closest('a') as HTMLAnchorElement | null
+      const eventTarget = me.target as HTMLElement | null
+      const anchor = eventTarget?.closest('a') as HTMLAnchorElement | null
       if (!anchor || !container!.contains(anchor)) return
 
       const noteSlug = anchor.getAttribute('data-note-slug')
       if (!noteSlug) return
-      // Broken wiki links are rendered as anchors with a marker class; let
-      // them no-op rather than navigating to a 404.
-      if (anchor.classList.contains('wikilink-broken')) {
-        me.preventDefault()
-        return
-      }
-      // Modifier-aware behavior: shift / alt clicks go through the browser
-      // (open in window / save link). Same skip for non-left clicks.
-      if (me.button !== 0 && me.button !== 1) return
-      if (me.shiftKey || me.altKey) return
-
-      const href = anchor.getAttribute('href') || `/${params.locale}/notes/${noteSlug}`
+      const href =
+        anchor.getAttribute('href') || `/${params.locale}/notes/${noteSlug}`
       const title = anchor.textContent?.trim() || noteSlug
 
-      const tabState = useTabStore.getState()
-      const activeSlug = tabState.activeSlug
-      const activeTab = activeSlug
-        ? tabState.tabs.find((t) => t.slug === activeSlug)
-        : null
-      const noteCtx = useNoteContextStore.getState()
-      const current = activeTab
-        ? { slug: activeTab.slug, title: activeTab.title, kind: activeTab.kind }
-        : noteCtx.currentSlug && noteCtx.currentTitle
-          ? { slug: noteCtx.currentSlug, title: noteCtx.currentTitle }
-          : null
-      const currentSlug = activeSlug ?? noteCtx.currentSlug
-
-      me.preventDefault()
-
-      if (me.button === 1) {
-        // Middle-click: pin in background, don't navigate.
-        useTabStore.getState().openInNewTab(
-          { slug: noteSlug, title },
-          current,
-        )
-        return
-      }
-      if (me.metaKey || me.ctrlKey) {
-        useTabStore.getState().openInNewTab(
-          { slug: noteSlug, title },
-          current,
-        )
-        router.push(href)
-        return
-      }
-      useTabStore.getState().replaceActive(
-        { slug: noteSlug, title },
-        currentSlug,
+      const intent = decideWikiClickIntent(
+        {
+          button: me.button,
+          ctrlKey: me.ctrlKey,
+          metaKey: me.metaKey,
+          shiftKey: me.shiftKey,
+          altKey: me.altKey,
+        },
+        {
+          noteSlug,
+          href,
+          title,
+          broken: anchor.classList.contains('wikilink-broken'),
+        },
+        getCurrentTabAnchor(),
       )
-      router.push(href)
+
+      const store = useTabStore.getState()
+      switch (intent.kind) {
+        case 'ignore':
+        case 'browser':
+          return
+        case 'broken':
+          me.preventDefault()
+          return
+        case 'open-background':
+          me.preventDefault()
+          store.openInNewTab(intent.target, intent.current)
+          return
+        case 'open-new-tab':
+          me.preventDefault()
+          store.openInNewTab(intent.target, intent.current)
+          router.push(intent.href)
+          return
+        case 'replace':
+          me.preventDefault()
+          store.replaceActive(intent.target, intent.currentSlug)
+          router.push(intent.href)
+          return
+      }
     }
 
     // Middle-click usually fires `auxclick`, not `click` — listen to both so

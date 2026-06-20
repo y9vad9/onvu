@@ -12,7 +12,7 @@ import { visit, SKIP } from 'unist-util-visit'
 import { toString as hastToString } from 'hast-util-to-string'
 import type { Root as HastRoot, Element, ElementContent } from 'hast'
 import type { Root as MdastRoot, Text as MdastText, Link as MdastLink, PhrasingContent } from 'mdast'
-import type { Heading } from '@core/Note'
+import type { Heading, OutgoingLink } from '@core/Note'
 
 /**
  * Resolver used by the wiki-link plugin to map a `[[Target]]` reference to
@@ -63,23 +63,37 @@ function rehypeExtractHeadings(out: Heading[]) {
   }
 }
 
-function rehypeExtractLinks(out: string[]) {
+/**
+ * Walks the rendered body once and collects every outgoing link in document
+ * order, classifying each as internal (a note ref) or external (an http(s)
+ * URL). The right-side panel renders the list as-is, so the visible order
+ * matches the order the author wrote the links in the body. Duplicates
+ * within a kind are skipped — the panel only ever shows the first
+ * mention.
+ */
+function rehypeExtractAllOutgoingLinks(out: OutgoingLink[]) {
   return () => (tree: HastRoot) => {
-    const seen = new Set<string>()
+    const seenSlugs = new Set<string>()
+    const seenHrefs = new Set<string>()
     visit(tree, 'element', (node: Element) => {
       if (node.tagName !== 'a') return
       const href = typeof node.properties?.href === 'string' ? node.properties.href : null
       if (!href) return
+      if (/^https?:\/\//i.test(href)) {
+        if (seenHrefs.has(href)) return
+        seenHrefs.add(href)
+        out.push({ kind: 'external', href })
+        return
+      }
       const m =
         href.match(/^\/(?:[a-z]{2}\/)?notes\/([^#?/]+)/) ??
         href.match(/^(?:\.\.?\/)?([^#?/.]+)\.md$/) ??
         href.match(/^\[\[([^\]]+)\]\]$/)
       if (!m) return
       const slug = m[1]
-      if (!seen.has(slug)) {
-        seen.add(slug)
-        out.push(slug)
-      }
+      if (seenSlugs.has(slug)) return
+      seenSlugs.add(slug)
+      out.push({ kind: 'internal', slug })
     })
   }
 }
@@ -406,25 +420,6 @@ function rehypeExternalLinks() {
   }
 }
 
-// Walks the rendered body once and collects the de-duplicated set of
-// external URLs the author linked to. Mirrors `rehypeExtractLinks` for the
-// internal/wiki case. The note page uses this to populate the outgoing
-// list in the right side panel.
-function rehypeExtractExternalLinks(out: string[]) {
-  return () => (tree: HastRoot) => {
-    const seen = new Set<string>()
-    visit(tree, 'element', (node: Element) => {
-      if (node.tagName !== 'a') return
-      const href =
-        typeof node.properties?.href === 'string' ? node.properties.href : ''
-      if (!/^https?:\/\//i.test(href)) return
-      if (seen.has(href)) return
-      seen.add(href)
-      out.push(href)
-    })
-  }
-}
-
 function rehypeMermaidPlaceholders() {
   return () => (tree: HastRoot) => {
     visit(tree, 'element', (node: Element, index, parent) => {
@@ -474,8 +469,7 @@ function rehypeCaptureRawText(setter: (text: string) => void) {
 export interface ProcessedNote {
   html: string
   headings: Heading[]
-  outgoingLinks: string[]
-  outgoingExternalLinks: string[]
+  outgoingLinks: OutgoingLink[]
   rawText: string
 }
 
@@ -488,8 +482,7 @@ export async function processMarkdown(
   } = {},
 ): Promise<ProcessedNote> {
   const headings: Heading[] = []
-  const outgoingLinks: string[] = []
-  const outgoingExternalLinks: string[] = []
+  const outgoingLinks: OutgoingLink[] = []
   let rawText = ''
 
   let chain = unified()
@@ -524,8 +517,7 @@ export async function processMarkdown(
       properties: { className: ['anchor-icon'], ariaLabel: 'Link to section' },
       content: { type: 'text', value: '#' },
     })
-    .use(rehypeExtractLinks(outgoingLinks))
-    .use(rehypeExtractExternalLinks(outgoingExternalLinks))
+    .use(rehypeExtractAllOutgoingLinks(outgoingLinks))
     .use(rehypeExternalLinks())
     .use(rehypeKatex)
     .use(rehypeImageCarousel())
@@ -540,5 +532,5 @@ export async function processMarkdown(
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content)
 
-  return { html: String(result), headings, outgoingLinks, outgoingExternalLinks, rawText }
+  return { html: String(result), headings, outgoingLinks, rawText }
 }

@@ -52,7 +52,7 @@ describe('buildMentionGraph', () => {
       makeNote({
         slug: 'bar',
         title: 'Bar',
-        outgoingLinks: ['foo'],
+        outgoingLinks: [{ kind: 'internal', slug: 'foo' }],
         rawText: 'Links to Foo and also mentions Foo in text',
       }),
     ]
@@ -74,8 +74,8 @@ describe('buildMentionGraph', () => {
 
   it('counts connections symmetrically per node', async () => {
     const notes = [
-      makeNote({ slug: 'a', title: 'A_unique_title', outgoingLinks: ['b'] }),
-      makeNote({ slug: 'b', title: 'B_unique_title', outgoingLinks: ['a'] }),
+      makeNote({ slug: 'a', title: 'A_unique_title', outgoingLinks: [{ kind: 'internal', slug: 'b' }] }),
+      makeNote({ slug: 'b', title: 'B_unique_title', outgoingLinks: [{ kind: 'internal', slug: 'a' }] }),
     ]
     const graph = await buildMentionGraph(new MemoryNoteRepository(notes))
     expect(graph.nodes.find((n) => n.slug === 'a')?.connectionCount).toBe(2)
@@ -84,7 +84,7 @@ describe('buildMentionGraph', () => {
 
   it('ignores outgoing links to non-existent notes', async () => {
     const notes = [
-      makeNote({ slug: 'a', title: 'A_unique_title', outgoingLinks: ['ghost'] }),
+      makeNote({ slug: 'a', title: 'A_unique_title', outgoingLinks: [{ kind: 'internal', slug: 'ghost' }] }),
     ]
     const graph = await buildMentionGraph(new MemoryNoteRepository(notes))
     expect(graph.edges).toEqual([])

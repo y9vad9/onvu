@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useTabStore } from '@store/tabStore'
-import { useNoteContextStore } from '@store/noteContextStore'
+import { getCurrentTabAnchor } from '@lib/notes/currentTabAnchor'
 
 /**
  * Returns an onClick handler for a `<Link>` that points to a note.
@@ -21,24 +21,7 @@ export function useNoteLinkClick(slug: string, title: string) {
   const params = useParams<{ locale: string }>()
   return useCallback(
     (e: React.MouseEvent) => {
-      // Prefer tabStore.activeSlug as the "current view" anchor — it tracks
-      // both note pages (via NoteContextProvider) AND the singleton route
-      // tabs (garden index, global graph) via RouteTabSync. The note
-      // context store only knows about notes, so on a graph/welcome tab
-      // its currentSlug is null and replaceActive would have nothing to
-      // rewrite.
-      const tabState = useTabStore.getState()
-      const activeSlug = tabState.activeSlug
-      const activeTab = activeSlug
-        ? tabState.tabs.find((t) => t.slug === activeSlug)
-        : null
-      const noteCtx = useNoteContextStore.getState()
-      const current = activeTab
-        ? { slug: activeTab.slug, title: activeTab.title, kind: activeTab.kind }
-        : noteCtx.currentSlug && noteCtx.currentTitle
-          ? { slug: noteCtx.currentSlug, title: noteCtx.currentTitle }
-          : null
-      const currentSlug = activeSlug ?? noteCtx.currentSlug
+      const { current, currentSlug } = getCurrentTabAnchor()
 
       // Honour whatever href the underlying <Link> declared — search results
       // and other surfaces add query strings (?q=…&hit=…) that the

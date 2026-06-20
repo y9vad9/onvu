@@ -5,6 +5,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, X, FileText, Globe, Palette, Navigation } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import Fuse from 'fuse.js'
+import {
+  parsePaletteQuery,
+  mergeFuseResults,
+  applyParentFilters,
+} from '@lib/search/paletteQuery'
 import { useSearchStore } from '@store/searchStore'
 import { useThemeStore, THEMES } from '@store/themeStore'
 import { useTabStore } from '@store/tabStore'
@@ -105,55 +110,16 @@ export function CommandPalette() {
     includeScore: true,
   }), [index])
 
-  // Parse parent: filters from query
-  const { cleanQuery, parentFilters } = useMemo(() => {
-    const parts = query.split(/\s+/)
-    const parentFilters: string[] = []
-    const rest: string[] = []
-    for (const part of parts) {
-      const m = part.match(/^parent:(.+)$/i)
-      if (m) parentFilters.push(m[1])
-      else rest.push(part)
-    }
-    return { cleanQuery: rest.join(' ').trim(), parentFilters }
-  }, [query])
+  // Split parent:foo filters out of the visible query (see paletteQuery.ts).
+  const { cleanQuery, parentFilters } = useMemo(
+    () => parsePaletteQuery(query),
+    [query],
+  )
 
   const noteResults = useMemo(() => {
     if (!cleanQuery && parentFilters.length === 0) return index.slice(0, 5)
-    let results = index
-    if (cleanQuery) {
-      // Tokenize the query and require every token to match (intersect by slug
-      // and sum scores so the best combined hit ranks first).
-      const tokens = cleanQuery.split(/\s+/).filter((t) => t.length >= 2)
-      const seeds = tokens.length > 0 ? tokens : [cleanQuery]
-      let merged: Map<string, { item: SearchIndexEntry; score: number }> | null = null
-      for (const token of seeds) {
-        const hits = fuse.search(token)
-        const map = new Map<string, { item: SearchIndexEntry; score: number }>()
-        for (const h of hits) map.set(h.item.slug, { item: h.item, score: h.score ?? 1 })
-        if (merged === null) merged = map
-        else {
-          const next = new Map<string, { item: SearchIndexEntry; score: number }>()
-          for (const [slug, prev] of merged) {
-            const hit = map.get(slug)
-            if (hit) next.set(slug, { item: prev.item, score: prev.score + hit.score })
-          }
-          merged = next
-        }
-        if (merged.size === 0) break
-      }
-      results = Array.from((merged ?? new Map()).values())
-        .sort((a, b) => a.score - b.score)
-        .map((r) => r.item)
-    }
-    if (parentFilters.length > 0) {
-      results = results.filter((n) =>
-        parentFilters.every((p) =>
-          n.parents.some((np) => np.toLowerCase() === p.toLowerCase()),
-        ),
-      )
-    }
-    return results.slice(0, 8)
+    const fuseResults = cleanQuery ? mergeFuseResults(cleanQuery, fuse) : index
+    return applyParentFilters(fuseResults, parentFilters).slice(0, 8)
   }, [cleanQuery, parentFilters, fuse, index])
 
   const otherLocales = LOCALES.filter((l) => l !== locale)

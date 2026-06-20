@@ -1,6 +1,6 @@
 import type { Note } from '@core/Note'
 
-function makeNote(overrides: Partial<Note> = {}): Note {
+export function makeNote(overrides: Partial<Note> = {}): Note {
   return {
     slug: 'sample',
     title: 'Sample',
@@ -21,7 +21,6 @@ function makeNote(overrides: Partial<Note> = {}): Note {
     body: '<p>Body</p>',
     headings: [],
     outgoingLinks: [],
-    outgoingExternalLinks: [],
     rawText: 'Body',
     readingTimeMinutes: 1,
     ...overrides,
@@ -45,7 +44,7 @@ export const sampleNotes: Note[] = [
     parents: ['Kotlin'],
     series: 'Kotlin Series',
     order: 1,
-    outgoingLinks: ['flows'],
+    outgoingLinks: [{ kind: 'internal', slug: 'flows' }],
     rawText: 'Coroutines suspend without blocking. See Kotlin docs.',
   }),
   makeNote({
@@ -56,7 +55,7 @@ export const sampleNotes: Note[] = [
     parents: ['Kotlin'],
     series: 'Kotlin Series',
     order: 2,
-    outgoingLinks: ['coroutines'],
+    outgoingLinks: [{ kind: 'internal', slug: 'coroutines' }],
     rawText: 'Flow is a cold stream. Mentions Coroutines.',
   }),
   makeNote({
@@ -101,5 +100,3 @@ export const sampleNotes: Note[] = [
     rawText: 'Next.js app router. Uses Kotlin? No.',
   }),
 ]
-
-export { makeNote }

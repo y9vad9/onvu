@@ -33,29 +33,45 @@ describe('processMarkdown', () => {
   describe('outgoing links', () => {
     it('extracts internal note links from /notes/ URLs', async () => {
       const result = await processMarkdown(`See [this](/notes/foo) and [that](/notes/bar).`)
-      expect(result.outgoingLinks).toEqual(['foo', 'bar'])
+      expect(result.outgoingLinks).toEqual([
+        { kind: 'internal', slug: 'foo' },
+        { kind: 'internal', slug: 'bar' },
+      ])
     })
 
     it('extracts links from locale-prefixed URLs', async () => {
       const result = await processMarkdown(`See [this](/en/notes/foo).`)
-      expect(result.outgoingLinks).toEqual(['foo'])
+      expect(result.outgoingLinks).toEqual([{ kind: 'internal', slug: 'foo' }])
     })
 
-    it('deduplicates repeated links', async () => {
+    it('deduplicates repeated internal links', async () => {
       const result = await processMarkdown(
         `See [foo](/notes/foo) and again [foo](/notes/foo).`,
       )
-      expect(result.outgoingLinks).toEqual(['foo'])
+      expect(result.outgoingLinks).toEqual([{ kind: 'internal', slug: 'foo' }])
     })
 
     it('extracts links from relative .md references', async () => {
       const result = await processMarkdown(`See [this](./foo.md).`)
-      expect(result.outgoingLinks).toEqual(['foo'])
+      expect(result.outgoingLinks).toEqual([{ kind: 'internal', slug: 'foo' }])
     })
 
-    it('ignores external links', async () => {
-      const result = await processMarkdown(`See [this](https://example.com/notes/foo).`)
-      expect(result.outgoingLinks).toEqual([])
+    it('classifies http(s) URLs as external entries', async () => {
+      const result = await processMarkdown(`See [this](https://example.com).`)
+      expect(result.outgoingLinks).toEqual([
+        { kind: 'external', href: 'https://example.com' },
+      ])
+    })
+
+    it('preserves body order between internal and external links', async () => {
+      const md = `[A](/notes/a) [B](https://example.com) [C](/notes/c) [D](https://other.example).`
+      const result = await processMarkdown(md)
+      expect(result.outgoingLinks).toEqual([
+        { kind: 'internal', slug: 'a' },
+        { kind: 'external', href: 'https://example.com' },
+        { kind: 'internal', slug: 'c' },
+        { kind: 'external', href: 'https://other.example' },
+      ])
     })
   })
 
@@ -108,6 +124,81 @@ describe('processMarkdown', () => {
       const result = await processMarkdown(`Visit [our site](https://example.com) please.`)
       expect(result.rawText).toContain('our site')
       expect(result.rawText).not.toContain('https://')
+    })
+  })
+
+  describe('external links', () => {
+    it('decorates http(s) anchors with external-link class and target=_blank', async () => {
+      const result = await processMarkdown(`[Site](https://example.com).`)
+      expect(result.html).toContain('class="external-link"')
+      expect(result.html).toContain('target="_blank"')
+      expect(result.html).toContain('rel="noopener noreferrer"')
+    })
+
+    it('does not decorate internal links', async () => {
+      const result = await processMarkdown(`[Foo](/notes/foo)`)
+      expect(result.html).not.toContain('external-link')
+    })
+
+    it('deduplicates external URLs in the outgoing list', async () => {
+      const result = await processMarkdown(
+        `Visit [foo](https://x.com) twice: [again](https://x.com).`,
+      )
+      expect(result.outgoingLinks).toEqual([
+        { kind: 'external', href: 'https://x.com' },
+      ])
+    })
+  })
+
+  describe('wiki links', () => {
+    function resolveFoo(target: string) {
+      if (target.toLowerCase() === 'foo') return { slug: 'foo', title: 'Foo' }
+      return null
+    }
+
+    it('rewrites resolved wiki links to /notes/<slug>', async () => {
+      const result = await processMarkdown(`See [[Foo]].`, {
+        resolveWikiLink: resolveFoo,
+      })
+      expect(result.html).toContain('href="/notes/foo"')
+      expect(result.html).toContain('data-note-slug="foo"')
+      expect(result.html).toContain('class="wikilink"')
+    })
+
+    it('marks broken wiki links with wikilink-broken class', async () => {
+      const result = await processMarkdown(`See [[Missing]].`, {
+        resolveWikiLink: resolveFoo,
+      })
+      expect(result.html).toContain('wikilink-broken')
+    })
+
+    it('honours display text [[Target|Label]]', async () => {
+      const result = await processMarkdown(`See [[Foo|the link]].`, {
+        resolveWikiLink: resolveFoo,
+      })
+      expect(result.html).toContain('the link')
+    })
+  })
+
+  describe('inline image marker', () => {
+    it('marks ?inline images with the inline-image class', async () => {
+      const result = await processMarkdown(`Yes ![ok](/icon.svg?inline) here.`)
+      expect(result.html).toContain('class="inline-image"')
+    })
+
+    it('strips the ?inline marker from src', async () => {
+      const result = await processMarkdown(`![ok](/icon.svg?inline)`)
+      expect(result.html).not.toContain('?inline')
+      expect(result.html).toContain('/icon.svg')
+    })
+  })
+
+  describe('mermaid', () => {
+    it('replaces mermaid code blocks with a placeholder div carrying the source', async () => {
+      const md = '```mermaid\ngraph TD; A-->B;\n```'
+      const result = await processMarkdown(md)
+      expect(result.html).toContain('class="mermaid"')
+      expect(result.html).not.toContain('<pre')
     })
   })
 

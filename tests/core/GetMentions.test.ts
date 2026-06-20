@@ -7,7 +7,7 @@ describe('getMentions', () => {
   it('classifies notes with explicit outgoing link as linked mentions', async () => {
     const notes = [
       makeNote({ slug: 'target', title: 'Target_unique', rawText: 'content' }),
-      makeNote({ slug: 'a', title: 'A', outgoingLinks: ['target'], rawText: 'has link' }),
+      makeNote({ slug: 'a', title: 'A', outgoingLinks: [{ kind: 'internal', slug: 'target' }], rawText: 'has link' }),
     ]
     const repo = new MemoryNoteRepository(notes)
     const result = await getMentions(repo, notes[0])
@@ -40,7 +40,7 @@ describe('getMentions', () => {
       makeNote({
         slug: 'c',
         title: 'C',
-        outgoingLinks: ['target'],
+        outgoingLinks: [{ kind: 'internal', slug: 'target' }],
         rawText: 'Target_unique is mentioned and linked',
       }),
     ]

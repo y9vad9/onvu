@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { forwardRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useTabStore, type TabKind } from '@store/tabStore'
-import { useNoteContextStore } from '@store/noteContextStore'
+import { getCurrentTabAnchor } from '@lib/notes/currentTabAnchor'
 
 type LinkProps = React.ComponentProps<typeof Link>
 
@@ -35,25 +35,7 @@ export const RouteLink = forwardRef<HTMLAnchorElement, RouteLinkProps>(
         {...rest}
         ref={ref}
         onClick={(e) => {
-          // For "what's the current tab?" we use tabStore.activeSlug —
-          // noteContextStore only knows about notes, so when the user is
-          // on the graph or welcome tab itself, its currentSlug is null
-          // and replaceActive can't find anything to rewrite.
-          const tabState = useTabStore.getState()
-          const activeSlug = tabState.activeSlug
-          const activeTab = activeSlug
-            ? tabState.tabs.find((t) => t.slug === activeSlug)
-            : null
-          const ctx = useNoteContextStore.getState()
-          const current = activeTab
-            ? {
-                slug: activeTab.slug,
-                title: activeTab.title,
-                kind: activeTab.kind,
-              }
-            : ctx.currentSlug && ctx.currentTitle
-              ? { slug: ctx.currentSlug, title: ctx.currentTitle }
-              : null
+          const { current, currentSlug: activeSlug } = getCurrentTabAnchor()
 
           const anchor = e.currentTarget as HTMLAnchorElement
           const href = anchor.getAttribute('href') || ''

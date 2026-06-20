@@ -4,6 +4,10 @@ export interface Heading {
   depth: 1 | 2 | 3 | 4
 }
 
+export type OutgoingLink =
+  | { kind: 'internal'; slug: string }
+  | { kind: 'external'; href: string }
+
 export interface Note {
   slug: string
   title: string
@@ -29,9 +33,14 @@ export interface Note {
   isEpic: boolean
   body: string
   headings: Heading[]
-  outgoingLinks: string[]
-  /** Absolute http(s) URLs the author linked to from the body. */
-  outgoingExternalLinks: string[]
+  /**
+   * Every link out of this note in the order the author wrote them in the
+   * body — internal note refs and external URLs interleaved. Used directly
+   * for the right-side "Outgoing" panel so the visible order matches the
+   * reading order; consumers that only care about internal links (mention
+   * graph, backlinks) filter on `kind === 'internal'`.
+   */
+  outgoingLinks: OutgoingLink[]
   rawText: string
   readingTimeMinutes: number
 }

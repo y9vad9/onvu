@@ -26,9 +26,13 @@ export async function buildMentionGraph(
   const titleByNote = notes.map((n) => ({ note: n, lowerTitle: n.title.toLowerCase() }))
 
   for (const note of notes) {
-    // Explicit outgoing links
-    const outgoingSet = new Set(note.outgoingLinks)
-    for (const target of note.outgoingLinks) {
+    // Explicit outgoing links — internal only; external URLs don't
+    // contribute to the mention graph.
+    const outgoingSlugs = note.outgoingLinks
+      .filter((l): l is { kind: 'internal'; slug: string } => l.kind === 'internal')
+      .map((l) => l.slug)
+    const outgoingSet = new Set(outgoingSlugs)
+    for (const target of outgoingSlugs) {
       if (slugSet.has(target)) addEdge(note.slug, target, 'link')
     }
 
