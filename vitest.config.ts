@@ -53,6 +53,18 @@ export default defineConfig({
       },
     },
     exclude: ['tests-e2e/**', 'node_modules/**', 'dist/**', '.next/**'],
+    // Single-fork-per-project: one worker process per project, tests run
+    // sequentially inside it. Slower than the default fan-out, but:
+    //   - chdir-heavy tests (tests/content, tests/lib/images, tests/adapters)
+    //     can't fight each other for the cwd from neighbouring forks.
+    //   - On catastrophic failure / Ctrl+C, the parent only has 2 children
+    //     to reap instead of one-per-CPU. Vitest used to leave a fanned-out
+    //     pool of workers spinning in RAM when tests crashed during setup,
+    //     and this configuration eliminates that surface entirely.
+    pool: 'forks',
+    poolOptions: {
+      forks: { singleFork: true },
+    },
     projects: [
       {
         resolve: { alias: aliases },
@@ -62,6 +74,8 @@ export default defineConfig({
           environment: 'node',
           globals: true,
           setupFiles: ['./tests/setup.ts'],
+          pool: 'forks',
+          poolOptions: { forks: { singleFork: true } },
           include: [
             'tests/core/**/*.test.ts',
             'tests/adapters/**/*.test.ts',
@@ -80,6 +94,8 @@ export default defineConfig({
           environment: 'jsdom',
           globals: true,
           setupFiles: ['./tests/setup.ts'],
+          pool: 'forks',
+          poolOptions: { forks: { singleFork: true } },
           include: [
             'tests/hooks/**/*.test.{ts,tsx}',
             'tests/components/**/*.test.{ts,tsx}',

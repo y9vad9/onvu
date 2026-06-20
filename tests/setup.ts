@@ -15,7 +15,16 @@ import { afterEach, vi } from 'vitest'
 if (typeof window !== 'undefined') {
   await import('@testing-library/jest-dom/vitest')
   const { cleanup } = await import('@testing-library/react')
-  afterEach(() => cleanup())
+  afterEach(() => {
+    cleanup()
+    // RTL's cleanup only unmounts containers it created with `render()`.
+    // Anything a test wrote directly via `document.body.innerHTML = …`
+    // survives — and the next test in the same jsdom worker then sees
+    // those stray nodes (caught us with a duplicate <a> leaking from
+    // ArticleEnhancer tests into a NoteCard `getByRole('link')` lookup).
+    // Reset the body so each jsdom test starts from a clean DOM.
+    if (typeof document !== 'undefined') document.body.innerHTML = ''
+  })
 
   // ResizeObserver isn't implemented by jsdom. Tests that care about the
   // restore-on-grow loop in useTabScrollRestore reach for the polyfill via

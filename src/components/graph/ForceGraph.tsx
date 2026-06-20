@@ -227,7 +227,17 @@ export function ForceGraph({
   }, [hoverId, graph.edges])
 
   return (
-    <div ref={containerRef} style={{ width: width ?? '100%', height: height ?? '100%' }}>
+    <div
+      ref={containerRef}
+      style={{
+        width: width ?? '100%',
+        height: height ?? '100%',
+        // Pointer cursor while hovering a node — the canvas itself can't
+        // self-set this per-region, so we toggle on the container based on
+        // the current hover state.
+        cursor: hoverId ? 'pointer' : 'default',
+      }}
+    >
       {dims && (
         <ForceGraph2D
           ref={setFgRef}
@@ -237,6 +247,23 @@ export function ForceGraph({
           backgroundColor="transparent"
           nodeLabel="name"
           nodeRelSize={3}
+          // Default hitbox is the painted circle — tiny nodes are almost
+          // impossible to click. Paint a wider transparent disc so the
+          // pointer area is generous regardless of node val.
+          nodePointerAreaPaint={(
+            n: GraphNodeData,
+            color: string,
+            ctx: CanvasRenderingContext2D,
+          ) => {
+            const x = (n as { x?: number }).x
+            const y = (n as { y?: number }).y
+            if (typeof x !== 'number' || typeof y !== 'number') return
+            const r = Math.max(8, Math.sqrt(n.val) * 3 + 4)
+            ctx.fillStyle = color
+            ctx.beginPath()
+            ctx.arc(x, y, r, 0, Math.PI * 2)
+            ctx.fill()
+          }}
           nodeColor={(n: GraphNodeData) => {
             if (highlightSlugs.size > 0) {
               return highlightSlugs.has(n.id) ? colors.primary : colors.border
