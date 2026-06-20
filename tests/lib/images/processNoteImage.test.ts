@@ -86,4 +86,29 @@ describe('processNoteImage', () => {
     expect(result!.srcset).not.toMatch(/800w/)
     expect(result!.srcset).not.toMatch(/1280w/)
   }, 15000)
+
+  it('copies GIFs verbatim so animation survives (no webp re-encode)', async () => {
+    const { processNoteImage } = await import('@lib/images/processNoteImage')
+    const noteDir = path.join(tmpRoot, 'content', 'notes', 'en')
+    const srcPath = path.join(noteDir, 'react.gif')
+    // Build a tiny animated GIF with two distinct frames so a single-frame
+    // webp output would have a different size — proves we're not running
+    // it through the lossy webp encoder.
+    const animated = await sharp({
+      create: { width: 16, height: 16, channels: 4, background: '#000' },
+    })
+      .gif({ loop: 0 })
+      .toBuffer()
+    await fs.writeFile(srcPath, animated)
+
+    const result = await processNoteImage('./react.gif', noteDir)
+    expect(result).not.toBeNull()
+    expect(result!.src).toMatch(/\.gif$/)
+    // No responsive srcset for the GIF branch.
+    expect(result!.srcset).toBe('')
+    // File was copied byte-for-byte under public/.
+    const publicPath = path.join(tmpRoot, 'public', result!.src)
+    const written = await fs.readFile(publicPath)
+    expect(written.equals(animated)).toBe(true)
+  }, 15000)
 })

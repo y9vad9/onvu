@@ -72,10 +72,38 @@ export async function processNoteImage(
 
   // Hash the input so the emitted filename is content-addressed.
   const hash = crypto.createHash('sha1').update(buffer).digest('hex').slice(0, 10)
+  const ext = path.extname(sourcePath).toLowerCase()
   const base = path.basename(sourcePath, path.extname(sourcePath))
   const slug = `${base}-${hash}`
 
   await fs.mkdir(ASSETS_ROOT, { recursive: true })
+
+  // GIFs short-circuit the webp pipeline. Sharp's `.webp({ quality })`
+  // path only reads the first frame, so an animated GIF would collapse
+  // to a still image — bad for inline reaction glyphs that exist
+  // precisely BECAUSE they animate. Copy the source verbatim instead
+  // (content-hash filename keeps caching honest) and skip the srcset
+  // ladder entirely: the renderer's inline-image CSS pins the height,
+  // and GIFs are typically tiny enough that responsive variants would
+  // be over-engineering.
+  if (ext === '.gif') {
+    const outName = `${slug}.gif`
+    const outPath = path.join(ASSETS_ROOT, outName)
+    try {
+      await fs.access(outPath)
+    } catch {
+      await fs.writeFile(outPath, buffer)
+    }
+    const result: ProcessedImage = {
+      src: `${URL_PREFIX}/${outName}`,
+      srcset: '',
+      width: meta.width,
+      height: meta.height,
+      alt: null,
+    }
+    cache.set(cacheKey, result)
+    return result
+  }
 
   // Generate webp variants for widths ≤ source width. Always include the
   // source width as one variant so we don't upscale.

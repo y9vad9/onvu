@@ -464,15 +464,22 @@ body {
   margin: 0 0.15em;
 }
 
-/* Note videos — `![caption](demo.mp4)` rewritten by the rehype pipeline. */
+/* Note videos — `![caption](demo.mp4)` rewritten by the rehype pipeline.
+   The frame is always 16:9 regardless of the source video's aspect ratio:
+   landscape footage fills it edge-to-edge, portrait / vertical recordings
+   (mobile screen captures, phone clips) sit centred with letterbox bars
+   on either side. `object-fit: contain` is what makes the inner content
+   honour its own ratio inside the 16:9 box; the dark background acts as
+   the letterbox so the bars stay invisible against dark themes and read
+   as a deliberate frame against light ones. */
 .prose video.note-video {
   display: block;
-  border-radius: 0.75rem;
-  max-width: 100%;
   width: 100%;
-  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border-radius: 0.75rem;
   margin: 1.25em 0;
-  background: var(--code-bg);
+  background: #000;
 }
 
 /* ── Carousel (image-only table converted by rehype plugin) ──────────── */
