@@ -22,7 +22,15 @@ export default function LocaleFreeRedirect() {
     } catch {
       // localStorage not available
     }
-    router.replace(`/${locale}/notes/${params.slug}`)
+    // Preserve any `#hash` and `?query` from the incoming URL when
+    // bouncing through to the localised note page. Without this, a link
+    // like `notes/education#section` written on a page like `/en` (which
+    // resolves relatively to `/notes/education#section`) loses the hash
+    // here and the destination loads at the top instead of scrolling to
+    // the anchor.
+    // Standard order: search first, then hash.
+    const tail = window.location.search + window.location.hash
+    router.replace(`/${locale}/notes/${params.slug}${tail}`)
   }, [router, params.slug])
 
   return (

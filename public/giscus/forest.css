@@ -1,0 +1,98 @@
+/*
+ * Onvu — Giscus theme for the built-in `forest` palette.
+ * Vars: --bg #091610 / --fg #d1fae5 / --primary #4ade80 / --muted #6ee7b7
+ *        --card #0f2318 / --card-hover #152d1e / --code-bg #071a0e
+ *        --border #134e24 / --primary-muted #052e16
+ */
+main {
+  /* Syntax highlighting */
+  --color-prettylights-syntax-comment: #6ee7b7;
+  --color-prettylights-syntax-constant: #4ade80;
+  --color-prettylights-syntax-entity: #86efac;
+  --color-prettylights-syntax-storage-modifier-import: #86efac;
+  --color-prettylights-syntax-entity-tag: #fde047;
+  --color-prettylights-syntax-keyword: #facc15;
+  --color-prettylights-syntax-string: #fde047;
+  --color-prettylights-syntax-variable: #d1fae5;
+  --color-prettylights-syntax-invalid-illegal-text: #fca5a5;
+  --color-prettylights-syntax-invalid-illegal-bg: rgba(252, 165, 165, 0.18);
+  --color-prettylights-syntax-markup-heading: #4ade80;
+  --color-prettylights-syntax-markup-italic: #d1fae5;
+  --color-prettylights-syntax-markup-bold: #d1fae5;
+  --color-prettylights-syntax-markup-deleted-text: #fca5a5;
+  --color-prettylights-syntax-markup-deleted-bg: rgba(252, 165, 165, 0.18);
+  --color-prettylights-syntax-markup-inserted-text: #4ade80;
+  --color-prettylights-syntax-markup-inserted-bg: rgba(74, 222, 128, 0.2);
+  --color-prettylights-syntax-markup-changed-text: #facc15;
+  --color-prettylights-syntax-markup-changed-bg: rgba(250, 204, 21, 0.18);
+  --color-prettylights-syntax-markup-ignored-text: #6ee7b7;
+
+  /* Base UI */
+  --color-fg-default: #d1fae5;
+  --color-fg-muted: #6ee7b7;
+  --color-fg-subtle: #4ade80;
+  --color-canvas-default: #091610;
+  --color-canvas-overlay: #0f2318;
+  --color-canvas-inset: #071a0e;
+  --color-canvas-subtle: #102016;
+  --color-border-default: #134e24;
+  --color-border-muted: #103618;
+  --color-neutral-muted: rgba(110, 231, 183, 0.2);
+
+  /* Accents */
+  --color-accent-fg: #4ade80;
+  --color-accent-emphasis: #4ade80;
+  --color-accent-muted: rgba(74, 222, 128, 0.4);
+  --color-accent-subtle: rgba(74, 222, 128, 0.15);
+
+  /* Standard buttons */
+  --color-btn-text: #d1fae5;
+  --color-btn-bg: #0f2318;
+  --color-btn-border: #134e24;
+  --color-btn-hover-bg: #152d1e;
+  --color-btn-hover-border: #166534;
+  --color-btn-active-bg: #14532d;
+  --color-btn-selected-bg: #14532d;
+  --color-btn-counter-bg: #071a0e;
+  --color-btn-outline-text: #4ade80;
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+
+  /* Primary buttons */
+  --color-btn-primary-text: #091610;
+  --color-btn-primary-bg: #4ade80;
+  --color-btn-primary-border: #4ade80;
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: #86efac;
+  --color-btn-primary-hover-border: #86efac;
+  --color-btn-primary-selected-bg: #22c55e;
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: rgba(9, 22, 16, 0.5);
+  --color-btn-primary-disabled-bg: rgba(74, 222, 128, 0.4);
+  --color-btn-primary-disabled-border: transparent;
+
+  /* Misc UI */
+  --color-action-list-item-default-hover-bg: #152d1e;
+  --color-segmented-control-bg: #071a0e;
+  --color-segmented-control-button-bg: #0f2318;
+  --color-segmented-control-button-selected-border: #134e24;
+
+  /* State */
+  --color-success-fg: #4ade80;
+  --color-attention-fg: #facc15;
+  --color-attention-muted: rgba(250, 204, 21, 0.4);
+  --color-attention-subtle: rgba(250, 204, 21, 0.15);
+  --color-danger-fg: #fca5a5;
+  --color-danger-muted: rgba(252, 165, 165, 0.4);
+  --color-danger-subtle: rgba(252, 165, 165, 0.15);
+
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-7: #134e24;
+  --color-scale-blue-8: #052e16;
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+main .gsc-comment-box-textarea::placeholder { color: #6ee7b7; }
+main .gsc-loading-image { background-image: none; }

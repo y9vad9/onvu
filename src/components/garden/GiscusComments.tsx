@@ -4,12 +4,26 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useThemeStore } from '@store/themeStore'
 
-const THEME_MAP: Record<string, string> = {
-  light: 'light',
-  dark: 'dark_dimmed',
-  warm: 'dark_dimmed',
-  forest: 'dark_dimmed',
-  system: 'preferred_color_scheme',
+/**
+ * Resolves the `data-theme` value Giscus expects for one of our built-in
+ * palettes. For light / dark / warm / forest we ship a custom CSS file
+ * under `/giscus/<theme>.css` so the comment widget matches the rest of
+ * the page exactly. The URL must be absolute because Giscus loads it
+ * from inside its own `giscus.app` iframe — a site-relative path would
+ * resolve against giscus.app and 404. `window.location.origin` is read
+ * at call time so the same code works on localhost, staging and prod.
+ *
+ * `system` stays on Giscus's `preferred_color_scheme` preset; matching
+ * that with a custom CSS would require two files and a way to swap them
+ * on OS preference changes, and the preset already does that internally.
+ */
+const CUSTOM_THEMES = new Set(['light', 'dark', 'warm', 'forest'])
+
+function giscusTheme(theme: string): string {
+  if (typeof window === 'undefined') return 'preferred_color_scheme'
+  if (theme === 'system') return 'preferred_color_scheme'
+  if (!CUSTOM_THEMES.has(theme)) return 'preferred_color_scheme'
+  return `${window.location.origin}/giscus/${theme}.css`
 }
 
 /** Locales Giscus has a UI translation for. Anything else falls back to English. */
@@ -75,7 +89,7 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
     script.setAttribute('data-reactions-enabled', '1')
     script.setAttribute('data-emit-metadata', '0')
     script.setAttribute('data-input-position', 'top')
-    script.setAttribute('data-theme', THEME_MAP[theme] ?? 'preferred_color_scheme')
+    script.setAttribute('data-theme', giscusTheme(theme))
     script.setAttribute('data-lang', giscusLang(locale))
     script.setAttribute('data-loading', 'lazy')
     el.appendChild(script)
@@ -86,7 +100,7 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame')
     if (!iframe) return
     iframe.contentWindow?.postMessage(
-      { giscus: { setConfig: { theme: THEME_MAP[theme] ?? 'preferred_color_scheme' } } },
+      { giscus: { setConfig: { theme: giscusTheme(theme) } } },
       'https://giscus.app',
     )
   }, [theme])
