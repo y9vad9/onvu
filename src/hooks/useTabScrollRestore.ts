@@ -35,7 +35,6 @@ export function useTabScrollRestore(slug: string) {
   useLayoutEffect(() => {
     const scroller = document.getElementById('notes-scroll')
     if (!scroller) return
-    const hash = window.location.hash ? window.location.hash.slice(1) : ''
     let hashInterval: number | null = null
     let restoreRO: ResizeObserver | null = null
     let restoreDeadline: number | null = null
@@ -48,19 +47,51 @@ export function useTabScrollRestore(slug: string) {
       restoringRef.current = false
     }
 
-    if (hash) {
+    /**
+     * Try to scroll the `#notes-scroll` container to a hash-targeted
+     * element. Polls because the article body may stream in after mount
+     * (server components, MDX with async resolvers). We deliberately
+     * compute the offset and set `scrollTop` directly instead of using
+     * `scrollIntoView` — the latter chooses the "nearest scrollable
+     * ancestor", and on some viewports that turns out to be the window
+     * (which doesn't scroll), making the call a silent no-op. Direct
+     * `scrollTop` always targets our container.
+     */
+    function scrollToHash(rawHash: string) {
+      if (!rawHash) return
+      const id = decodeURIComponent(rawHash.replace(/^#/, ''))
+      const tryScroll = () => {
+        const el = document.getElementById(id)
+        if (!el) return false
+        // Compute element offset within the scroll container.
+        const offset = el.getBoundingClientRect().top
+          - scroller!.getBoundingClientRect().top
+          + scroller!.scrollTop
+        scroller!.scrollTop = Math.max(0, offset)
+        return true
+      }
+      // Immediate attempt covers the common case where the body is
+      // already in the DOM. Failing that, poll for up to 1s while the
+      // streaming finishes.
+      if (tryScroll()) return
+      if (hashInterval !== null) window.clearInterval(hashInterval)
       let attempts = 0
       hashInterval = window.setInterval(() => {
-        const el = document.getElementById(decodeURIComponent(hash))
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          window.clearInterval(hashInterval!)
-          hashInterval = null
-        } else if (++attempts > 20) {
+        if (tryScroll() || ++attempts > 20) {
           window.clearInterval(hashInterval!)
           hashInterval = null
         }
       }, 50)
+    }
+
+    function onHashChange() {
+      scrollToHash(window.location.hash)
+    }
+    window.addEventListener('hashchange', onHashChange)
+
+    const hash = window.location.hash ? window.location.hash.slice(1) : ''
+    if (hash) {
+      scrollToHash(hash)
     } else {
       const stored = useTabStore.getState().getScrollPosition(slug)
       lastScrollRef.current = stored
@@ -93,6 +124,7 @@ export function useTabScrollRestore(slug: string) {
     return () => {
       if (hashInterval !== null) window.clearInterval(hashInterval)
       stopRestore()
+      window.removeEventListener('hashchange', onHashChange)
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('wheel', stopRestore)
       scroller.removeEventListener('touchstart', stopRestore)
