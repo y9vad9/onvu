@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useThemeStore } from '@store/themeStore'
 
@@ -51,6 +52,9 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
   const theme = useThemeStore((s) => s.theme)
   const containerRef = useRef<HTMLDivElement>(null)
   const [shouldLoad, setShouldLoad] = useState(false)
+  /** Flips true once the giscus iframe has fired its `load` event. Used
+   *  to swap the spinner for the rendered widget. */
+  const [loaded, setLoaded] = useState(false)
 
   // Lazy-load when within ~1000px of viewport
   useEffect(() => {
@@ -75,6 +79,10 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
     const el = containerRef.current
     if (!el) return
 
+    // Each script (re-)mount starts a fresh load cycle — the iframe gets
+    // recreated, so the spinner should come back until the new one
+    // finishes loading.
+    setLoaded(false)
     el.innerHTML = ''
     const script = document.createElement('script')
     script.src = 'https://giscus.app/client.js'
@@ -95,6 +103,42 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
     el.appendChild(script)
   }, [shouldLoad, config, theme, locale])
 
+  // Detect when the giscus iframe has finished loading so the spinner
+  // can disappear. Giscus's `client.js` injects the iframe into our
+  // container asynchronously, so a MutationObserver picks it up the
+  // moment it appears; from there we listen for its native `load` event.
+  // Fallback: if `load` doesn't fire within 10s (slow network, ad
+  // blocker eating the request), hide the spinner anyway so the panel
+  // stops claiming it's still working.
+  useEffect(() => {
+    if (!shouldLoad || loaded) return
+    const el = containerRef.current
+    if (!el) return
+
+    let cleanupIframe: (() => void) | null = null
+    const wait = new MutationObserver(() => {
+      const iframe = el.querySelector<HTMLIFrameElement>('iframe.giscus-frame')
+      if (!iframe) return
+      wait.disconnect()
+      const onLoad = () => setLoaded(true)
+      iframe.addEventListener('load', onLoad, { once: true })
+      cleanupIframe = () => iframe.removeEventListener('load', onLoad)
+      // Some browsers complete the load before our listener attaches.
+      if (iframe.contentDocument?.readyState === 'complete') {
+        setLoaded(true)
+      }
+    })
+    wait.observe(el, { childList: true, subtree: true })
+
+    const timeout = window.setTimeout(() => setLoaded(true), 10_000)
+
+    return () => {
+      wait.disconnect()
+      window.clearTimeout(timeout)
+      cleanupIframe?.()
+    }
+  }, [shouldLoad, loaded])
+
   // Update theme without re-creating the iframe
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame')
@@ -110,7 +154,18 @@ export function GiscusComments({ config }: { config: GiscusConfig }) {
       <h3 className="text-xs uppercase tracking-wide font-medium text-muted mb-4">
         {t('title')}
       </h3>
-      <div ref={containerRef} className="giscus" />
+      <div className="relative">
+        <div ref={containerRef} className="giscus" />
+        {shouldLoad && !loaded && (
+          <div
+            className="flex items-center justify-center gap-2 py-8 text-muted text-sm"
+            aria-live="polite"
+          >
+            <Loader2 size={16} className="animate-spin" />
+            <span>{t('loading')}</span>
+          </div>
+        )}
+      </div>
     </section>
   )
 }

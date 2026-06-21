@@ -120,7 +120,8 @@
     "openGlobalGraph": "Відкрити повний граф"
   },
   "comments": {
-    "title": "Коментарі"
+    "title": "Коментарі",
+    "loading": "Завантаження коментарів…"
   },
   "footer": {
     "copyright": "© {year} {name}. Всі права захищено."

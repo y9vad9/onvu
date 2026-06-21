@@ -120,7 +120,8 @@
     "openGlobalGraph": "Globalen Graphen öffnen"
   },
   "comments": {
-    "title": "Kommentare"
+    "title": "Kommentare",
+    "loading": "Kommentare werden geladen …"
   },
   "footer": {
     "copyright": "© {year} {name}. Alle Rechte vorbehalten."
