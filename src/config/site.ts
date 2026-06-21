@@ -53,6 +53,13 @@ export interface ProjectEntry {
   name: string
   description: string
   url: string
+  /**
+   * Optional leading icon (project logo, repo avatar, etc.). Same shape
+   * as `WorkEntry.logo` and `EducationEntry.logo` — site-absolute path
+   * or external URL. Appending `?dark-invert` swaps the logo's colours
+   * under dark themes (see `parseDecoratedImage`).
+   */
+  logo?: string
 }
 
 export interface EducationEntry {

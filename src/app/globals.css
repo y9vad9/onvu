@@ -298,6 +298,23 @@ body {
   color: var(--shiki-dark);
   background-color: var(--shiki-dark-bg);
 }
+
+/* Per-image opt-in: an author appends `?dark-invert` to a logo URL when
+   the asset is a dark-on-transparent monochrome that needs flipping
+   against a dark backdrop. The renderer parses the marker and tags the
+   <img> with `image-dark-invert`; the filter only fires under the dark
+   themes (and the system theme when the OS is dark) so light themes are
+   left alone. `system` follows the OS preference. */
+.theme-dark .image-dark-invert,
+.theme-warm .image-dark-invert,
+.theme-forest .image-dark-invert {
+  filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+  .theme-system .image-dark-invert {
+    filter: invert(1);
+  }
+}
 @media (prefers-color-scheme: dark) {
   .theme-system .prose pre code span {
     color: var(--shiki-dark);
