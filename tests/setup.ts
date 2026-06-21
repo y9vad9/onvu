@@ -66,11 +66,17 @@ if (typeof window !== 'undefined') {
     Element.prototype.scrollIntoView = () => {}
   }
 
-  // Some zustand persist stores try to access localStorage at module load
-  // time. jsdom should provide it but vitest's jsdom env sometimes leaves
-  // it unset depending on the version. Defensive stub so the persist
-  // middleware doesn't crash before a single test runs.
-  if (!('localStorage' in window) || !window.localStorage) {
+  // Zustand persist stores read localStorage when a setState is committed.
+  // jsdom is inconsistent here: locally it provides a working Storage,
+  // but on CI it sometimes hands back an object whose `setItem` is
+  // missing (the engine refuses storage at `about:blank` and only
+  // populates the API once a real URL is loaded). The presence check
+  // we used before passed straight through this broken shape, so the
+  // persist middleware crashed with `storage.setItem is not a function`.
+  // Probe for the actual method before deciding whether to swap in our
+  // own Map-backed Storage.
+  const ls = (window as { localStorage?: Partial<Storage> }).localStorage
+  if (!ls || typeof ls.setItem !== 'function' || typeof ls.getItem !== 'function') {
     const store = new Map<string, string>()
     const fake: Storage = {
       get length() { return store.size },
