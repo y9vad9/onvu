@@ -127,6 +127,18 @@ export function ExplorerPanel({ notes }: { notes: NoteListItem[] }) {
     },
   })
 
+  // Pull the highlighted item into view whenever the user navigates to a
+  // different note (wiki link, tab click, command palette, browser back).
+  // The keyboard-nav hook already calls `scrollIntoView` when its `idx`
+  // changes, so we just need to nudge `idx` onto whatever the current
+  // slug is. The list itself already highlights the current note via
+  // `is-active`; this effect makes sure the highlight is visible.
+  useEffect(() => {
+    if (!currentSlug) return
+    const idx = filteredEntries.findIndex((e) => e.slug === currentSlug)
+    if (idx >= 0) filesNav.setIdx(idx)
+  }, [currentSlug, filteredEntries, filesNav])
+
   const searchNav = useListKeyboardNav({
     count: searchResults.length,
     resetKey: searchResults,
