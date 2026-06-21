@@ -71,7 +71,7 @@ export async function LandingBody({ locale }: { locale: string }) {
 
       <Section id="work-experience">
         <SectionHeading>{t('workExperience')}</SectionHeading>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {siteConfig.home.workExperience.map((entry) => (
             <WorkItem key={entry.company} entry={entry} viewLabel={t('view')} />
           ))}
@@ -80,7 +80,7 @@ export async function LandingBody({ locale }: { locale: string }) {
 
       <Section id="projects">
         <SectionHeading>{t('projects')}</SectionHeading>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {siteConfig.home.projects.map((entry) => (
             <ProjectItem key={entry.name} entry={entry} viewLabel={t('view')} />
           ))}
@@ -89,7 +89,7 @@ export async function LandingBody({ locale }: { locale: string }) {
 
       <Section id="education">
         <SectionHeading>{t('education')}</SectionHeading>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {siteConfig.home.education.map((entry) => (
             <EducationItem
               key={entry.institution}

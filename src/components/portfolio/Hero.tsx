@@ -18,7 +18,7 @@ import { isExternalHref } from '@lib/url'
 export function HeroSection({ children }: { children: ReactNode }) {
   return (
     <section className="pt-24 pb-16 px-4">
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12">
         {children}
       </div>
     </section>
