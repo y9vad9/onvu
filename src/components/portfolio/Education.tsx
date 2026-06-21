@@ -1,9 +1,8 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { EducationEntry } from '@config/site'
 import { isExternalHref } from '@lib/url'
-import { parseDecoratedImage } from '@lib/images/decoratedImage'
+import { PortfolioLogo } from './PortfolioLogo'
 
 /**
  * One education row. Caller owns the container layout. The whole card is
@@ -21,17 +20,10 @@ export function EducationItem({
 }) {
   const external = entry.url ? isExternalHref(entry.url) : false
   const Icon = external ? ExternalLink : ArrowRight
-  const logo = parseDecoratedImage(entry.logo)
 
   const body = (
     <>
-      <Image
-        src={logo.src}
-        alt={entry.institution}
-        width={32}
-        height={32}
-        className={`rounded-md flex-shrink-0 ${logo.className}`}
-      />
+      <PortfolioLogo src={entry.logo} alt={entry.institution} />
       <div className="flex-1 min-w-0">
         <p className="font-medium group-hover:text-primary transition-colors truncate">
           {entry.institution}

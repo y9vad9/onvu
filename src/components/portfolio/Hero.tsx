@@ -4,6 +4,8 @@ import Link from 'next/link'
 import type { SocialLink } from '@config/site'
 import { resolveSocialIcon } from '@lib/socialIcon'
 import { isExternalHref } from '@lib/url'
+import { parseDecoratedImage } from '@lib/images/decoratedImage'
+import { processStaticImage } from '@lib/images/processStaticImage'
 
 /**
  * Hero is intentionally split into primitives so the landing composition
@@ -25,7 +27,7 @@ export function HeroSection({ children }: { children: ReactNode }) {
   )
 }
 
-export function HeroAvatar({
+export async function HeroAvatar({
   src,
   alt,
   className = '',
@@ -34,13 +36,37 @@ export function HeroAvatar({
   alt: string
   className?: string
 }) {
+  // Avatars may carry a `?dark-invert` marker — strip it so the encoder
+  // sees a clean URL, then re-attach the resulting class to the rendered
+  // image. SVG / external sources fall through to `next/image` (works
+  // in both static and server mode).
+  const { src: rawSrc, className: decoClass } = parseDecoratedImage(src)
+  const optimised = await processStaticImage(rawSrc)
+  const combinedClass = `rounded-2xl w-48 md:w-80 h-auto object-cover flex-shrink-0 ${decoClass} ${className}`.trim()
+
+  if (optimised) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={optimised.src}
+        srcSet={optimised.srcset || undefined}
+        sizes="(max-width: 768px) 192px, 320px"
+        width={optimised.width}
+        height={optimised.height}
+        alt={alt}
+        loading="eager"
+        decoding="async"
+        className={combinedClass}
+      />
+    )
+  }
   return (
     <Image
-      src={src}
+      src={rawSrc}
       alt={alt}
       width={320}
       height={320}
-      className={`rounded-2xl w-48 md:w-80 h-auto object-cover flex-shrink-0 ${className}`}
+      className={combinedClass}
       priority
     />
   )
@@ -100,6 +126,7 @@ export function Hero({
 }) {
   return (
     <HeroSection>
+      {/* RSC: async component renders directly. */}
       <HeroAvatar src={profileImage} alt={name} />
       <HeroIntro name={name} bio={bio}>
         <HeroSocials socials={socials} />

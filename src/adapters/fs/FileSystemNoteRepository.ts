@@ -7,6 +7,7 @@ import type { Note } from '@core/Note'
 import { processMarkdown, type WikiLinkResolver } from '@lib/mdx/pipeline'
 import { processNoteImage } from '@lib/images/processNoteImage'
 import { processNoteVideo } from '@lib/images/processNoteVideo'
+import { processStaticImage } from '@lib/images/processStaticImage'
 import type { Locale } from '@config/site'
 
 const NOTES_ROOT = path.join(process.cwd(), 'content', 'notes')
@@ -17,7 +18,13 @@ function localeDir(locale: Locale): string {
 
 type NoteMeta = Omit<
   Note,
-  'body' | 'headings' | 'outgoingLinks' | 'rawText'
+  | 'body'
+  | 'headings'
+  | 'outgoingLinks'
+  | 'rawText'
+  | 'coverImageSrcSet'
+  | 'coverImageWidth'
+  | 'coverImageHeight'
 >
 
 function parseNoteMeta(slug: string, raw: string): NoteMeta {
@@ -122,13 +129,42 @@ export class FileSystemNoteRepository implements NoteRepository {
               resolveImage: (ref) => processNoteImage(ref, noteDir),
               resolveVideo: (ref) => processNoteVideo(ref, noteDir),
             })
-          const resolvedCoverImage =
-            meta.coverImage && !/^[a-z][a-z0-9+.-]*:\/\//i.test(meta.coverImage) && !meta.coverImage.startsWith('/')
-              ? (await processNoteImage(meta.coverImage, noteDir))?.src ?? meta.coverImage
-              : meta.coverImage
+          // Optimise the frontmatter cover image. Three cases:
+          //   1. External URL (http://, data:) — left untouched.
+          //   2. Relative path (`./cover.jpg`, `attachments/x.png`) —
+          //      processNoteImage resolves against the note's directory.
+          //   3. Absolute site path (`/notes-assets/foo.png`,
+          //      `/images/banner.jpg`, or `/notes/<locale>/attachments/x`)
+          //      — processStaticImage hits the same encoder, so a cover
+          //      image and a body image pointing at the same file share
+          //      one encoded output on disk.
+          // Anything we can't optimise (SVG, unknown bucket, missing file)
+          // falls back to the original ref so the original author intent
+          // survives.
+          let resolvedCoverImage: string | null = meta.coverImage
+          let coverImageSrcSet: string | null = null
+          let coverImageWidth: number | null = null
+          let coverImageHeight: number | null = null
+          if (meta.coverImage) {
+            const isExternal = /^[a-z][a-z0-9+.-]*:\/\//i.test(meta.coverImage)
+            if (!isExternal) {
+              const optimised = meta.coverImage.startsWith('/')
+                ? await processStaticImage(meta.coverImage)
+                : await processNoteImage(meta.coverImage, noteDir)
+              if (optimised) {
+                resolvedCoverImage = optimised.src
+                coverImageSrcSet = optimised.srcset || null
+                coverImageWidth = optimised.width
+                coverImageHeight = optimised.height
+              }
+            }
+          }
           const note: Note = {
             ...meta,
             coverImage: resolvedCoverImage,
+            coverImageSrcSet,
+            coverImageWidth,
+            coverImageHeight,
             body: html,
             headings,
             outgoingLinks,

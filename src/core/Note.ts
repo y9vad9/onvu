@@ -13,6 +13,12 @@ export interface Note {
   title: string
   preview: string
   coverImage: string | null
+  /** Responsive srcset string for `coverImage`, or null if the source is
+   *  external / SVG / not in a bucket we own. Same format as the rest of
+   *  the pipeline: `<url> <width>w, <url> <width>w`. */
+  coverImageSrcSet: string | null
+  coverImageWidth: number | null
+  coverImageHeight: number | null
   date: Date | null
   /** Optional last-revision date. Rendered as "Updated …" next to `date`. */
   updated: Date | null
