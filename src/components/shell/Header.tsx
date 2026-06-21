@@ -18,7 +18,7 @@ import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useThemeStore, THEMES, THEME_OPTIONS, type Theme } from '@store/themeStore'
 import { useSearchStore } from '@store/searchStore'
-import { config as siteConfig } from '~/site.config'
+import { useSiteConfig } from '@lib/config/SiteConfigProvider'
 import { navigation } from '~/content/navigation'
 import type { NavGroup as NavGroupType, NavLink } from '@config/navigation'
 import { LOCALES } from '@i18n/routing'
@@ -52,6 +52,7 @@ function themeIcon(option: ThemeOption | undefined, size = 16): React.ReactNode 
 }
 
 function BrandMark() {
+  const siteConfig = useSiteConfig()
   const branding = siteConfig.branding
   if (branding?.kind === 'image') {
     return (

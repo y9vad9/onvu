@@ -14,7 +14,7 @@ import { JsonLd } from '@components/seo/JsonLd'
 import { INDEX_TAB_SLUG, GRAPH_TAB_SLUG } from '@store/tabStore'
 import { breadcrumbsJsonLd, collectionPageJsonLd } from '@lib/seo/jsonLd'
 import { baseMetadata } from '@lib/seo/metadata'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 
 export async function generateMetadata({
   params,
@@ -37,7 +37,10 @@ export default async function GardenHubPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  const t = await getTranslations({ locale, namespace: 'garden' })
+  const [t, siteConfig] = await Promise.all([
+    getTranslations({ locale, namespace: 'garden' }),
+    loadSiteConfig(locale),
+  ])
   const repo = createRepository(locale)
 
   const [allNotes, recentNotes, epics, graph] = await Promise.all([

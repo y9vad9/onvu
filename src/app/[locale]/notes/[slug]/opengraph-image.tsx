@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createRepository } from '@adapters/createRepositories'
 import { getNote } from '@core/GetNote'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 import { routing } from '@i18n/routing'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -31,7 +31,10 @@ export default async function NoteOgImage({
 }: {
   params: { locale: string; slug: string }
 }) {
-  const note = await getNote(createRepository(params.locale), params.slug)
+  const [note, siteConfig] = await Promise.all([
+    getNote(createRepository(params.locale), params.slug),
+    loadSiteConfig(params.locale),
+  ])
   const title = note?.title ?? siteConfig.owner.name
   const description = note?.description ?? note?.preview ?? siteConfig.owner.bio
   const author = note?.author ?? siteConfig.owner.name

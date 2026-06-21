@@ -12,6 +12,8 @@ import {
   personJsonLd,
   organizationJsonLd,
 } from '@lib/seo/jsonLd'
+import { loadSiteConfig } from '@lib/config/loadConfig'
+import { SiteConfigProvider } from '@lib/config/SiteConfigProvider'
 
 export async function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
@@ -37,14 +39,19 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as Locale)) notFound()
   setRequestLocale(locale)
 
-  const messages = await getMessages()
+  const [messages, siteConfig] = await Promise.all([
+    getMessages(),
+    loadSiteConfig(locale),
+  ])
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <ClientProviders>
-        <JsonLd data={[websiteJsonLd(locale), organizationJsonLd() ?? personJsonLd()]} />
-        {children}
-      </ClientProviders>
+      <SiteConfigProvider value={siteConfig}>
+        <ClientProviders>
+          <JsonLd data={[websiteJsonLd(locale), organizationJsonLd() ?? personJsonLd()]} />
+          {children}
+        </ClientProviders>
+      </SiteConfigProvider>
     </NextIntlClientProvider>
   )
 }

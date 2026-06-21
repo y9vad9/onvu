@@ -1,5 +1,7 @@
+'use client'
+
 import { useTranslations } from 'next-intl'
-import { config as siteConfig } from '~/site.config'
+import { useSiteConfig } from '@lib/config/SiteConfigProvider'
 
 /**
  * Footer body — edit freely. This file is user-owned (see `.gitattributes`).
@@ -12,6 +14,7 @@ import { config as siteConfig } from '~/site.config'
  */
 export function FooterBody() {
   const t = useTranslations('footer')
+  const siteConfig = useSiteConfig()
   const year = new Date().getFullYear()
   return (
     <footer className="py-6 text-center text-sm text-muted border-t border-border mt-auto">

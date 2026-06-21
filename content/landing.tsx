@@ -12,7 +12,7 @@ import { NoteCardLarge } from '@components/portfolio/FeaturedNotes'
 import { WorkItem } from '@components/portfolio/WorkExperience'
 import { ProjectItem } from '@components/portfolio/Projects'
 import { EducationItem } from '@components/portfolio/Education'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 
 /**
  * Landing page body — this is the file you edit as a template consumer.
@@ -36,6 +36,7 @@ import { config as siteConfig } from '~/site.config'
  */
 export async function LandingBody({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'home' })
+  const siteConfig = await loadSiteConfig(locale)
 
   const repo = createRepository(locale)
   const featuredNotes = await listFeaturedNotes(repo, siteConfig.navigation.featuredNotes)

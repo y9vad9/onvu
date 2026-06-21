@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes } from '@core/ListNotes'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 import { siteUrl } from '@lib/seo/url'
 import { routing } from '@i18n/routing'
 
@@ -17,7 +17,10 @@ export async function GET(
 ) {
   const { locale } = await params
   const repo = createRepository(locale)
-  const notes = await listAllNotes(repo)
+  const [notes, siteConfig] = await Promise.all([
+    listAllNotes(repo),
+    loadSiteConfig(locale),
+  ])
   const datedNotes = notes.filter((n) => n.date !== null && !n.noindex)
 
   const baseUrl = siteUrl()

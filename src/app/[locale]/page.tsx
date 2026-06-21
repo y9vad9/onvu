@@ -9,7 +9,7 @@ import { breadcrumbsJsonLd, itemListJsonLd } from '@lib/seo/jsonLd'
 import { baseMetadata } from '@lib/seo/metadata'
 import { createRepository } from '@adapters/createRepositories'
 import { listFeaturedNotes } from '@core/ListNotes'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 
 export async function generateMetadata({
   params,
@@ -17,7 +17,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'home' })
+  const [t, siteConfig] = await Promise.all([
+    getTranslations({ locale, namespace: 'home' }),
+    loadSiteConfig(locale),
+  ])
   return {
     ...baseMetadata({ locale, path: '/' }),
     title: { absolute: `${siteConfig.owner.name} — ${t('notes')}` },
@@ -36,7 +39,10 @@ export default async function HomePage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
-  const t = await getTranslations({ locale, namespace: 'home' })
+  const [t, siteConfig] = await Promise.all([
+    getTranslations({ locale, namespace: 'home' }),
+    loadSiteConfig(locale),
+  ])
   const featured = await listFeaturedNotes(
     createRepository(locale),
     siteConfig.navigation.featuredNotes,

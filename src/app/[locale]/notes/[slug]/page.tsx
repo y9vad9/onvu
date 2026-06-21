@@ -9,7 +9,7 @@ import { getMentions } from '@core/GetMentions'
 import { getRelatedNotes } from '@core/GetRelatedNotes'
 import { NoteArticle } from '@components/garden/NoteArticle'
 import { NoteContextProvider } from '@components/garden/NoteContextProvider'
-import { config as siteConfig } from '~/site.config'
+import { loadSiteConfig } from '@lib/config/loadConfig'
 import { routing } from '@i18n/routing'
 import type { Note } from '@core/Note'
 import { JsonLd } from '@components/seo/JsonLd'
@@ -32,7 +32,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>
 }): Promise<Metadata> {
   const { locale, slug } = await params
-  const repo = createRepository(locale)
+  const [repo, siteConfig] = [createRepository(locale), await loadSiteConfig(locale)]
   const note = await getNote(repo, slug)
   if (!note) return {}
 
@@ -76,7 +76,7 @@ export default async function NotePage({
 }) {
   const { locale, slug } = await params
   setRequestLocale(locale)
-  const repo = createRepository(locale)
+  const [repo, siteConfig] = [createRepository(locale), await loadSiteConfig(locale)]
   const note = await getNote(repo, slug)
   if (!note) notFound()
 
