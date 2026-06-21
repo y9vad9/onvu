@@ -221,6 +221,19 @@ body {
   font-style: italic;
 }
 
+/* Horizontal rule — markdown `---` becomes <hr>. Browser defaults give a
+   nearly-invisible 1px line and no surrounding margin, which reads as a
+   layout glitch rather than a deliberate section break. Match the
+   surrounding border colour, give it real top/bottom breathing room, and
+   keep the visual weight light enough that it separates without
+   competing with headings. */
+.prose hr {
+  margin: 2em 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  height: 0;
+}
+
 .prose blockquote {
   border-left: 3px solid var(--primary);
   padding: 0.5em 1em;
