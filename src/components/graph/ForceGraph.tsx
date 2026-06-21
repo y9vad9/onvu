@@ -26,6 +26,14 @@ export interface ForceGraphProps {
   repulsion?: number
   linkDistance?: number
   onNodeClickAction?: 'navigate' | ((slug: string) => void)
+  /**
+   * When `true`, the camera fits all nodes to the viewport once the
+   * simulation cools down (and on every subsequent reheat). Used by the
+   * side-panel `LocalGraph` — small canvas, small node set, no reason
+   * for the user to pan/zoom manually. The full-page `GlobalGraph`
+   * leaves this off so the user keeps control of the view.
+   */
+  autoFit?: boolean
 }
 
 interface GraphNodeData {
@@ -48,6 +56,9 @@ interface ForceGraphInstance {
   d3ReheatSimulation: () => void
   centerAt: (x?: number, y?: number, ms?: number) => void
   zoom: (scale: number, ms?: number) => void
+  /** Fits the camera to the bounding box of all nodes.
+   *  `ms` = animation duration, `px` = padding pixels around the box. */
+  zoomToFit: (ms?: number, px?: number) => void
 }
 
 /**
@@ -76,6 +87,7 @@ export function ForceGraph({
   repulsion = 120,
   linkDistance = 80,
   onNodeClickAction = 'navigate',
+  autoFit = false,
 }: ForceGraphProps) {
   const router = useRouter()
   const params = useParams<{ locale: string }>()
@@ -281,6 +293,16 @@ export function ForceGraph({
           }}
           onNodeClick={handleNodeClick}
           onNodeHover={(node: GraphNodeData | null) => setHoverId(node?.id ?? null)}
+          onEngineStop={
+            autoFit
+              ? () => {
+                  // Fit-to-viewport once layout settles. 40px padding
+                  // keeps node circles + labels away from the canvas
+                  // edge; 400ms feels considered without lagging.
+                  fgRef.current?.zoomToFit(400, 40)
+                }
+              : undefined
+          }
           d3AlphaDecay={0.02}
           d3VelocityDecay={0.3}
           cooldownTime={cooldownTimeMs}

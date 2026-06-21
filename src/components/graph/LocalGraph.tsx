@@ -30,18 +30,27 @@ export function LocalGraph({ slug }: { slug: string }) {
   // Memoize the 1-hop subgraph so unrelated re-renders (key presses, theme
   // changes, panel state) don't rebuild the graph object and reheat the
   // physics simulation downstream.
+  //
+  // The shape mirrors what the global graph highlights when you hover the
+  // same note: the centre node + its direct neighbours + only the edges
+  // that physically touch the centre. We deliberately drop edges between
+  // two neighbours that don't involve the slug — those make the side panel
+  // look like a clump and tell the reader nothing about THIS note's
+  // outgoing/incoming relationships, which is the whole point of the
+  // local view.
   const localGraph: MentionGraph | null = useMemo(() => {
     if (!fullGraph) return null
     const neighbors = new Set<string>([slug])
-    for (const edge of fullGraph.edges) {
-      if (edge.source === slug) neighbors.add(edge.target)
-      if (edge.target === slug) neighbors.add(edge.source)
+    const edges = fullGraph.edges.filter(
+      (e) => e.source === slug || e.target === slug,
+    )
+    for (const edge of edges) {
+      neighbors.add(edge.source)
+      neighbors.add(edge.target)
     }
     return {
       nodes: fullGraph.nodes.filter((n) => neighbors.has(n.slug)),
-      edges: fullGraph.edges.filter(
-        (e) => neighbors.has(e.source) && neighbors.has(e.target),
-      ),
+      edges,
     }
   }, [fullGraph, slug])
 
@@ -52,7 +61,7 @@ export function LocalGraph({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-[300px]">
-        <ForceGraph graph={localGraph} highlightSlugs={highlightSet} />
+        <ForceGraph graph={localGraph} highlightSlugs={highlightSet} autoFit />
       </div>
       <RouteLink
         href={`/${params.locale}/notes/graph`}
