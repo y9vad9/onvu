@@ -116,4 +116,47 @@ export const config: SiteConfig = {
   //   category: 'Announcements',
   //   categoryId: 'DIC_xxxx',
   // },
+
+  // Machine-readable surfaces for AI agents. Entirely opt-in — leave this
+  // block commented out and nothing below is generated or advertised.
+  //
+  // Set expectations first: Google states you "don't need to create new
+  // machine readable files, AI text files, markup, or Markdown to appear in
+  // Google Search", and that such files "neither harm nor help" because
+  // Search ignores them. None of this is an SEO lever, and llms.txt in
+  // particular is skipped by most AI crawlers today.
+  //
+  // What it does help: agents that fetch your page live — coding agents,
+  // ChatGPT/Claude browsing, Perplexity-User. They pay tokens for your nav
+  // chrome and get nothing from it; a markdown mirror is far cheaper to read.
+  // See https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+  //
+  // agents: {
+  //   markdown: {
+  //     enabled: true,
+  //     // [[Wiki Links]] → absolute URLs. On by default: an agent can't
+  //     // follow [[deep-modules]], so an unresolved mirror is half a document.
+  //     resolveWikilinks: true,
+  //     include: {
+  //       frontmatter: true,    // title, dates, tags, canonical URL
+  //       series: true,         // "part N of X" + sibling links
+  //       backlinks: true,      // notes linking here
+  //       outgoing: true,       // links out of this note
+  //       relatedNotes: true,   // notes sharing a parent
+  //     },
+  //   },
+  //   llmsTxt: { enabled: true, full: false },
+  //   discovery: {
+  //     linkAlternate: true,    // <link rel="alternate" type="text/markdown">
+  //     jsonLdEncoding: true,   // schema.org `encoding` → the mirror
+  //     emitHeadersFile: false, // Netlify/Cloudflare Pages `_headers`
+  //   },
+  //   schema: {
+  //     series: true,           // isPartOf CreativeWorkSeries + position
+  //     mentions: true,         // mentions, from the wiki-link graph
+  //     definedTerms: true,     // DefinedTerm / DefinedTermSet
+  //     citations: true,        // citation, from outbound external links
+  //     knowsAbout: true,       // Person.knowsAbout, from note tags
+  //   },
+  // },
 }
