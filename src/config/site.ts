@@ -145,6 +145,12 @@ export interface AgentsConfig {
   llmsTxt?: LlmsTxtConfig
   discovery?: AgentDiscoveryConfig
   schema?: AgentSchemaConfig
+  /**
+   * Per-group robots.txt policy for AI crawlers. Omit and robots.txt is
+   * unchanged. See `@lib/agents/crawlers` for the groups and why the
+   * distinction between them matters.
+   */
+  crawlers?: import('@lib/agents/crawlers').CrawlerPolicyConfig
 }
 
 export interface MarkdownMirrorConfig {

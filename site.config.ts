@@ -158,5 +158,29 @@ export const config: SiteConfig = {
   //     citations: true,        // citation, from outbound external links
   //     knowsAbout: true,       // Person.knowsAbout, from note tags
   //   },
+  //
+  //   // robots.txt policy for AI crawlers. Omit and robots.txt is unchanged.
+  //   //
+  //   // The three groups exist because "AI crawler" covers three jobs whose
+  //   // costs differ, and you can't tell which is which from the name:
+  //   //
+  //   //   training      — feeds model training. Blocking costs you nothing
+  //   //                   in any search product. (GPTBot, ClaudeBot,
+  //   //                   Google-Extended, CCBot, …)
+  //   //   aiSearch      — the retrieval index AI answers cite. Blocking
+  //   //                   these is what removes you from AI answers.
+  //   //                   (OAI-SearchBot, Claude-SearchBot, PerplexityBot, …)
+  //   //   userTriggered — a fetch because someone just asked about your page.
+  //   //                   OpenAI and Perplexity both document that these
+  //   //                   largely ignore robots.txt, so treat a rule here as
+  //   //                   a stated preference rather than a control.
+  //   //
+  //   // The common ask — "don't train on me, but do cite me" — is:
+  //   crawlers: {
+  //     training: 'block',
+  //     aiSearch: 'allow',
+  //     // Per-token escape hatch; keys need not be crawlers onvu knows about.
+  //     // overrides: { CCBot: 'allow', 'SomeNewBot': 'block' },
+  //   },
   // },
 }
