@@ -97,6 +97,17 @@ export function Header() {
   useBodyScrollLock(mobileOpen)
 
   useEffect(() => {
+    // `useBodyScrollLock` pins the body with `position: fixed`, which drives
+    // `window.scrollY` to 0 on open and back to the real offset on close.
+    // Both look like scrolls to this handler, so the bar hid itself while the
+    // drawer was open and again the moment it closed — neither triggered by
+    // the reader moving through the page. Don't listen at all while it's open;
+    // `barVisible` below keeps the bar on screen meanwhile.
+    if (mobileOpen) return
+    // Re-baseline before re-subscribing: the lock's cleanup restores the
+    // scroll offset, and comparing that against the stale 0 from the pinned
+    // body would read as a large downward scroll and hide the bar.
+    lastScrollY.current = window.scrollY
     const handleScroll = () => {
       const current = window.scrollY
       setIsVisible(current < lastScrollY.current || current < 60)
@@ -104,7 +115,7 @@ export function Header() {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [mobileOpen])
 
   function switchLocale(next: Locale) {
     setLangOpen(false)
@@ -120,7 +131,9 @@ export function Header() {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 h-14 bg-bg/90 backdrop-blur border-b border-border transition-transform duration-300 ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
+          // Pinned open while the drawer is: the bar carries the close
+          // button, so sliding it away would strand the drawer without one.
+          mobileOpen || isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
         <div className="max-w-5xl mx-auto px-4 h-full flex items-center gap-4">
@@ -199,14 +212,22 @@ export function Header() {
         </div>
       </header>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer.
+          `h-dvh`, not the implicit height of `inset-0`: a fixed element is
+          laid out against the *large* viewport, so on mobile Chrome its
+          bottom sits behind the retractable toolbar and the last drawer
+          entries were only reachable by overscrolling. `dvh` tracks the
+          toolbar, and the safe-area pad clears the iOS home indicator. */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 h-dvh z-50 flex">
           <div
             className="flex-1 bg-fg/20 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="w-72 bg-bg border-l border-border flex flex-col p-4 gap-2 overflow-y-auto">
+          <div
+            className="w-72 bg-bg border-l border-border flex flex-col p-4 gap-2 overflow-y-auto overscroll-contain"
+            style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+          >
             <div className="flex items-center justify-between mb-4">
               <span className="font-bold"><BrandMark /></span>
               <button

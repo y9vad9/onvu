@@ -67,13 +67,13 @@ export async function NoteArticle({
             {note.date && (
               <span className="flex items-center gap-1">
                 <Calendar size={13} />
-                {formatDateLong(note.date)}
+                {formatDateLong(note.date, locale)}
               </span>
             )}
             {note.updated && (
-              <span className="flex items-center gap-1" title={formatDateLong(note.updated)}>
+              <span className="flex items-center gap-1" title={formatDateLong(note.updated, locale)}>
                 <History size={13} />
-                {t('updated', { date: formatDateShort(note.updated) })}
+                {t('updated', { date: formatDateShort(note.updated, locale) })}
               </span>
             )}
             <span className="flex items-center gap-1">

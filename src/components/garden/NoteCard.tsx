@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { formatDateShort } from '@lib/formatDate'
 import { Archive, BookOpen, ArrowRight } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { NoteLink } from './NoteLink'
 
 export interface NoteCardData {
@@ -34,6 +34,7 @@ export function NoteCard({
   href: string
 }) {
   const tNote = useTranslations('note')
+  const locale = useLocale()
   return (
     <NoteLink
       slug={note.slug}
@@ -83,7 +84,7 @@ export function NoteCard({
           )}
           {note.date && (
             <span className="text-xs text-muted">
-              {formatDateShort(note.date)}
+              {formatDateShort(note.date, locale)}
             </span>
           )}
         </div>

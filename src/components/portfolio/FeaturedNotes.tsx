@@ -74,7 +74,7 @@ export function NoteCardLarge({
           {note.date && (
             <span className="flex items-center gap-1">
               <Calendar size={12} />
-              {formatDateShort(note.date)}
+              {formatDateShort(note.date, locale)}
             </span>
           )}
           <span className="flex items-center gap-1">

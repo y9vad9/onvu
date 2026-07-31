@@ -67,7 +67,7 @@ export function RelatedNotes({ notes }: { notes: RelatedNote[] }) {
               </p>
               {note.date && (
                 <p className="text-xs text-muted mt-1">
-                  {formatDateShort(note.date)}
+                  {formatDateShort(note.date, params.locale)}
                 </p>
               )}
             </div>

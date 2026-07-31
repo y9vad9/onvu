@@ -8,36 +8,43 @@
  * bandwidth with the LCP image; `Intl` is built into the runtime and costs
  * nothing to ship.
  *
- * The locale stays pinned to `en-US` because that is what the date-fns
- * default produced, so German and Ukrainian pages keep rendering the dates
- * they render today. Making dates follow the page locale would be a real
- * improvement, but it is a content change rather than a performance one.
+ * Dates follow the page locale. date-fns' bare `format` always emitted US
+ * English, so a German note showed "Jul 31, 2026" and a Ukrainian one the
+ * same — the only text on those pages still in English. `Intl` localises for
+ * free, and `en` resolves identically to the old `en-US`, so English output
+ * is unchanged:
  *
- * Formatters are constructed once at module scope — `Intl.DateTimeFormat`
- * construction is the expensive part, formatting is cheap.
+ *   en   Jul 31, 2026     July 31, 2026
+ *   de   31. Juli 2026    31. Juli 2026
+ *   uk   31 лип. 2026 р.  31 липня 2026 р.
+ *
+ * Constructing an `Intl.DateTimeFormat` is the expensive part and formatting
+ * is cheap, so instances are memoised per locale rather than per call.
  */
-const SHORT = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})
+type Style = 'short' | 'long'
 
-const LONG = new Intl.DateTimeFormat('en-US', {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-})
+const cache = new Map<string, Intl.DateTimeFormat>()
+
+function formatter(locale: string, month: Style): Intl.DateTimeFormat {
+  const key = `${locale}:${month}`
+  let hit = cache.get(key)
+  if (!hit) {
+    hit = new Intl.DateTimeFormat(locale, { month, day: 'numeric', year: 'numeric' })
+    cache.set(key, hit)
+  }
+  return hit
+}
 
 function toDate(value: Date | string | number): Date {
   return value instanceof Date ? value : new Date(value)
 }
 
-/** `Jul 31, 2026` — was `format(date, 'MMM d, yyyy')`. */
-export function formatDateShort(value: Date | string | number): string {
-  return SHORT.format(toDate(value))
+/** `Jul 31, 2026` / `31. Juli 2026` — was `format(date, 'MMM d, yyyy')`. */
+export function formatDateShort(value: Date | string | number, locale: string): string {
+  return formatter(locale, 'short').format(toDate(value))
 }
 
-/** `July 31, 2026` — was `format(date, 'MMMM d, yyyy')`. */
-export function formatDateLong(value: Date | string | number): string {
-  return LONG.format(toDate(value))
+/** `July 31, 2026` / `31 липня 2026 р.` — was `format(date, 'MMMM d, yyyy')`. */
+export function formatDateLong(value: Date | string | number, locale: string): string {
+  return formatter(locale, 'long').format(toDate(value))
 }
