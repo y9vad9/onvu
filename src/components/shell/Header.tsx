@@ -126,6 +126,7 @@ export function Header() {
         <div className="max-w-5xl mx-auto px-4 h-full flex items-center gap-4">
           {/* Logo */}
           <Link
+            prefetch={false}
             href={`/${locale}`}
             className="font-bold text-fg hover:text-primary transition-colors mr-2 flex-shrink-0"
           >
@@ -349,6 +350,7 @@ function NavLeafLink({
   }
   return (
     <Link
+      prefetch={false}
       href={href}
       className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-card-hover transition-colors"
     >
@@ -380,6 +382,7 @@ function NavLink({
   }
   return (
     <Link
+      prefetch={false}
       href={href}
       className="block px-4 py-2.5 text-sm text-fg hover:bg-card-hover hover:text-primary transition-colors"
     >
@@ -414,6 +417,7 @@ function MobileNavItem({
   }
   return (
     <Link
+      prefetch={false}
       href={href}
       onClick={onClick}
       className="block px-3 py-2 rounded-lg text-sm text-fg hover:bg-card-hover transition-colors"

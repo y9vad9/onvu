@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { format } from 'date-fns'
+import { formatDateShort } from '@lib/formatDate'
 import { Archive, BookOpen, ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { NoteLink } from './NoteLink'
@@ -83,7 +83,7 @@ export function NoteCard({
           )}
           {note.date && (
             <span className="text-xs text-muted">
-              {format(new Date(note.date), 'MMM d, yyyy')}
+              {formatDateShort(note.date)}
             </span>
           )}
         </div>
