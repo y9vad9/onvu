@@ -166,14 +166,23 @@ export function NotesHeader() {
             type="button"
             onClick={() => openSearch()}
             className="w-full max-w-sm flex items-center gap-2 h-7 px-3 rounded-full bg-card-hover border border-border text-muted hover:text-fg hover:border-primary/40 transition-colors text-xs"
-            aria-label="Open command palette"
+            // No `aria-label`. It read "Open command palette" while the button
+            // visibly says "Search notes, pages, themes…", so the accessible
+            // name did not contain the visible one — a voice-control user
+            // saying what they can see would not match the control
+            // (`label-content-name-mismatch`). Letting the visible text be the
+            // name keeps the two identical by construction.
           >
-            <Search size={12} className="flex-shrink-0" />
+            <Search size={12} className="flex-shrink-0" aria-hidden="true" />
             <span className="flex-1 text-left truncate">
               {tCommand('placeholder')}
             </span>
             {shortcutsEnabled && (
-              <span className="flex-shrink-0 px-1.5 py-px text-[10px] font-mono border border-border rounded text-muted">
+              // Part of the name otherwise: "Search notes, pages, themes… /".
+              <span
+                aria-hidden="true"
+                className="flex-shrink-0 px-1.5 py-px text-[10px] font-mono border border-border rounded text-muted"
+              >
                 /
               </span>
             )}

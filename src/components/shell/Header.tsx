@@ -159,14 +159,19 @@ export function Header() {
             <button
               onClick={() => openSearch()}
               className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm text-muted hover:border-primary hover:text-fg transition-colors w-56"
-              // "Press / to search" is wrong once the reader turns shortcuts
-              // off — and misleading for exactly the people most likely to.
-              aria-label={shortcutsEnabled ? tHeader('searchHint') : tHeader('searchPlaceholder')}
+              // No `aria-label` — see the note on the garden's search button.
+              // "Press / to search" did not contain the visible "Search…", and
+              // was wrong outright once the reader turned shortcuts off.
             >
-              <Search size={14} className="flex-shrink-0" />
+              <Search size={14} className="flex-shrink-0" aria-hidden="true" />
               <span className="text-xs flex-1 text-left truncate">{tHeader('searchPlaceholder')}</span>
               {shortcutsEnabled && (
-                <kbd className="text-xs px-1.5 py-0.5 rounded border border-border font-mono flex-shrink-0">/</kbd>
+                <kbd
+                  aria-hidden="true"
+                  className="text-xs px-1.5 py-0.5 rounded border border-border font-mono flex-shrink-0"
+                >
+                  /
+                </kbd>
               )}
             </button>
 
