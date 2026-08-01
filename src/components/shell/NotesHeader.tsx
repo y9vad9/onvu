@@ -28,9 +28,10 @@ import { EXPLORER_MODES, TOOLS_MODES } from '@components/garden/PanelModeTabs'
 import { TabBar } from '@components/garden/TabBar'
 import { RouteLink } from '@components/garden/RouteLink'
 import { INDEX_TAB_SLUG, GRAPH_TAB_SLUG } from '@store/tabStore'
-import { LOCALES } from '@i18n/routing'
+import { LOCALES, MULTILINGUAL } from '@i18n/routing'
 import type { Locale } from '@config/site'
 import { useLocaleLabel } from '@hooks/useLocaleLabel'
+import { useShortcutsEnabled } from '@hooks/useShortcutsEnabled'
 import { useState } from 'react'
 
 const THEME_ICONS: Record<Theme, React.ReactNode> = {
@@ -64,6 +65,7 @@ export function NotesHeader() {
   const { series } = useNoteContextStore()
   const tabsCount = useTabStore((s) => s.tabs.length)
   const openSearch = useSearchStore((s) => s.open)
+  const shortcutsEnabled = useShortcutsEnabled()
   const isMobile = useIsMobile()
   const router = useRouter()
   const pathname = usePathname()
@@ -170,9 +172,11 @@ export function NotesHeader() {
             <span className="flex-1 text-left truncate">
               {tCommand('placeholder')}
             </span>
-            <span className="flex-shrink-0 px-1.5 py-px text-[10px] font-mono border border-border rounded text-muted">
-              /
-            </span>
+            {shortcutsEnabled && (
+              <span className="flex-shrink-0 px-1.5 py-px text-[10px] font-mono border border-border rounded text-muted">
+                /
+              </span>
+            )}
           </button>
         )}
       </div>
@@ -187,6 +191,8 @@ export function NotesHeader() {
         {THEME_ICONS[theme]}
       </button>
 
+      {/* Hidden on a single-locale site — see the note in `Header`. */}
+      {MULTILINGUAL && (
       <div className="relative" ref={langRef}>
         <button
           onClick={() => setLangOpen((v) => !v)}
@@ -209,6 +215,7 @@ export function NotesHeader() {
           </div>
         )}
       </div>
+      )}
 
       {/* Right panel section buttons (when open), then divider, then collapse */}
       {rightOpen && !isMobile && (
