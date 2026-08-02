@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { GardenActions } from '@components/garden/GardenActions'
 import { getRouterMock } from '../../utils/nextRouter'
+import { usePanelStore } from '@store/panelStore'
 
 // The dynamic icon loader fetches a chunk per name in an effect; jsdom has no
 // bundler to serve those. The names are what matters here, not the glyphs.
@@ -115,5 +116,65 @@ describe('GardenActions', () => {
     await waitFor(() => expect(writeText).toHaveBeenCalled())
     expect(screen.getByText('rssFeed')).toBeInTheDocument()
     expect((await router()).push).not.toHaveBeenCalled()
+  })
+
+  it('copies a site-relative value against the deployed origin', async () => {
+    render(
+      <GardenActions
+        actions={[{ label: 'Feed', copy: '/en/feed.xml', icon: 'rss' }]}
+        locale="en"
+        randomSlugs={[]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Feed/ }))
+    // Config cannot know where the site is deployed, so the origin is joined
+    // on at click time rather than baked into the value.
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/en/feed.xml`),
+    )
+  })
+
+  it('copies an absolute value untouched', async () => {
+    render(
+      <GardenActions
+        actions={[{ label: 'Mail', copy: 'hello@example.com' }]}
+        locale="en"
+        randomSlugs={[]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Mail/ }))
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('hello@example.com'))
+  })
+
+  it('confirms only the action that was copied', async () => {
+    render(
+      <GardenActions
+        actions={[
+          { label: 'First', copy: 'a' },
+          { label: 'Second', copy: 'b' },
+        ]}
+        locale="en"
+        randomSlugs={[]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /First/ }))
+    // A single shared flag would flip both rows to "Copied!" at once.
+    await waitFor(() => expect(screen.getByText('copied')).toBeInTheDocument())
+    expect(screen.getByText('Second')).toBeInTheDocument()
+  })
+
+  it('runs a garden command', () => {
+    usePanelStore.setState({ leftOpen: false })
+    render(
+      <GardenActions
+        actions={[{ label: 'Explorer', command: 'toggleLeft' }]}
+        locale="en"
+        randomSlugs={[]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Explorer/ }))
+    // Dispatches through the same registry the palette and the keyboard use,
+    // so the three cannot drift apart on what an id means.
+    expect(usePanelStore.getState().leftOpen).toBe(true)
   })
 })
