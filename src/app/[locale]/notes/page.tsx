@@ -14,6 +14,7 @@ import { INDEX_TAB_SLUG, GRAPH_TAB_SLUG } from '@store/tabStore'
 import { breadcrumbsJsonLd, collectionPageJsonLd } from '@lib/seo/jsonLd'
 import { baseMetadata } from '@lib/seo/metadata'
 import { loadSiteConfig } from '@lib/config/loadConfig'
+import { loadGardenIntro } from '@lib/content/gardenIntro'
 
 export async function generateMetadata({
   params,
@@ -45,10 +46,11 @@ export default async function GardenHubPage({
   ])
   const repo = createRepository(locale)
 
-  const [allNotes, pinnedNotes, epics] = await Promise.all([
+  const [allNotes, pinnedNotes, epics, intro] = await Promise.all([
     listAllNotes(repo),
     listPinnedNotes(repo),
     getEpics(repo),
+    loadGardenIntro(locale),
   ])
   const notesForList = allNotes.map((n) => ({
     slug: n.slug,
@@ -90,11 +92,17 @@ export default async function GardenHubPage({
           says where you are. */}
       <h1 className="sr-only">{t('welcome')}</h1>
 
-      {/* One line, not a hero. Something has to tell a first-time visitor
-          what they've landed in, but the version this replaced spent a full
-          screen on a sprout, a greeting and this same sentence. Kept to the
-          sentence. */}
-      <p className="text-sm text-muted mb-10">{t('welcomeDescription')}</p>
+      {/* The author's own opening, from `content/garden/<locale>.md`.
+          Nothing renders when that file is absent — this slot briefly held
+          `garden.welcomeDescription`, but a framework string standing in for
+          the author's voice reads as filler, because it is. `welcomeDescription`
+          is back to serving only the meta description above. */}
+      {intro && (
+        <div
+          className="prose mb-10"
+          dangerouslySetInnerHTML={{ __html: intro }}
+        />
+      )}
 
       {/* Start here — the author's own entry points, and deliberately the
           first thing on the page.
