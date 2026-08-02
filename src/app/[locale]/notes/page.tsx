@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { Sprout, Clock, Star, Network } from 'lucide-react'
+import { Sprout, Pin, Star, Network } from 'lucide-react'
 import Link from 'next/link'
 import { createRepository } from '@adapters/createRepositories'
-import { listAllNotes, listRecentNotes } from '@core/ListNotes'
+import { listAllNotes, listPinnedNotes } from '@core/ListNotes'
 import { getEpics } from '@core/GetCategories'
-import { buildMentionGraph } from '@core/graph/BuildMentionGraph'
 import { NoteListClient } from '@components/garden/NoteListClient'
 import { NoteCard } from '@components/garden/NoteCard'
 import { RouteTabSync } from '@components/garden/RouteTabSync'
@@ -46,14 +45,11 @@ export default async function GardenHubPage({
   ])
   const repo = createRepository(locale)
 
-  const [allNotes, recentNotes, epics, graph] = await Promise.all([
+  const [allNotes, pinnedNotes, epics] = await Promise.all([
     listAllNotes(repo),
-    listRecentNotes(repo, 5),
+    listPinnedNotes(repo),
     getEpics(repo),
-    buildMentionGraph(repo),
   ])
-
-  const totalReadingTime = allNotes.reduce((sum, n) => sum + n.readingTimeMinutes, 0)
   const notesForList = allNotes.map((n) => ({
     slug: n.slug,
     title: n.title,
@@ -86,23 +82,49 @@ export default async function GardenHubPage({
           ),
         ]}
       />
-      {/* Welcome hero */}
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-muted mb-4">
-          <Sprout size={28} className="text-primary" />
-        </div>
-        <h1 className="text-3xl font-bold mb-2">{t('welcome')}</h1>
-        <p className="text-muted italic">{t('welcomeDescription')}</p>
-      </div>
+      {/* The hero that used to open this page carried its only `h1`. The
+          ceremony is gone but the document still needs a top-level heading:
+          without it the Graph CTA's `h2` would be the highest on the page,
+          leaving screen-reader users no title to orient by and the page with
+          no outline. Visually hidden rather than restored — the tab already
+          says where you are. */}
+      <h1 className="sr-only">{t('welcome')}</h1>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-12">
-        <StatCard label={t('notes')} value={allNotes.length} />
-        <StatCard label={t('totalReadingTime')} value={`${totalReadingTime} ${t('min')}`} />
-        <StatCard label={t('connections')} value={graph.edges.length} />
-      </div>
+      {/* Start here — the author's own entry points, and deliberately the
+          first thing on the page.
+          What used to lead here was a welcome hero and three stat cards.
+          Neither survived the question "what does a reader do with this?":
+          nobody navigates by a total reading time, and the hero spent a
+          whole screen restating that this is a garden. Pins are notes you
+          can read immediately, which is what someone arriving actually
+          wants — unlike the topic hubs below, they need no traversal. */}
+      {pinnedNotes.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
+            <Pin size={12} /> {t('startHere')}
+          </div>
+          <div className="flex flex-col gap-2">
+            {pinnedNotes.map((note) => (
+              <NoteCard
+                key={note.slug}
+                href={`/${locale}/notes/${note.slug}`}
+                note={{
+                  slug: note.slug,
+                  title: note.title,
+                  preview: note.preview,
+                  date: note.date?.toISOString() ?? null,
+                  coverImage: note.coverImage,
+                  coverImageSrcSet: note.coverImageSrcSet,
+                  isArchived: note.isArchived,
+                  isSeries: !!note.series,
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Epics */}
+      {/* Topics */}
       {epics.length > 0 && (
         <section className="mb-12">
           <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
@@ -131,31 +153,6 @@ export default async function GardenHubPage({
         </section>
       )}
 
-      {/* Recent notes */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
-          <Clock size={12} /> {t('recentNotes')}
-        </div>
-        <div className="flex flex-col gap-2">
-          {recentNotes.map((note) => (
-            <NoteCard
-              key={note.slug}
-              href={`/${locale}/notes/${note.slug}`}
-              note={{
-                slug: note.slug,
-                title: note.title,
-                preview: note.preview,
-                date: note.date?.toISOString() ?? null,
-                coverImage: note.coverImage,
-                coverImageSrcSet: note.coverImageSrcSet,
-                isArchived: note.isArchived,
-                isSeries: !!note.series,
-              }}
-            />
-          ))}
-        </div>
-      </section>
-
       {/* Graph CTA */}
       <RouteLink
         href={`/${locale}/notes/graph`}
@@ -176,30 +173,6 @@ export default async function GardenHubPage({
       <div className="mt-12">
         <NoteListClient notes={notesForList} locale={locale} />
       </div>
-    </div>
-  )
-}
-
-/**
- * Three of these sit in a `grid-cols-3` that never collapses, so on a phone
- * each card gets roughly 70px of content width. At `text-3xl` a value like
- * "189 min" wrapped onto two lines while "32" did not, and the labels wrapped
- * to three lines against one — same font size throughout, but the ragged
- * wrapping made the middle card read as a different size entirely.
- *
- * The value scales down on small screens and is pinned to a single line, so
- * the three cards stay visually identical whatever they contain. `tabular-nums`
- * keeps the digits from shifting width between locales.
- */
-function StatCard({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="text-center p-2 sm:p-4 rounded-xl border border-border">
-      <p className="text-lg sm:text-2xl md:text-3xl font-bold text-primary whitespace-nowrap tabular-nums">
-        {value}
-      </p>
-      <p className="text-[10px] sm:text-xs text-muted uppercase tracking-wide mt-1 text-balance">
-        {label}
-      </p>
     </div>
   )
 }
