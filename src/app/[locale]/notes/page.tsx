@@ -1,31 +1,21 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { Pin, Star, Network, Rss, Wrench } from 'lucide-react'
+import { Pin, Star, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes, listPinnedNotes } from '@core/ListNotes'
 import { getEpics } from '@core/GetCategories'
 import { NoteListClient } from '@components/garden/NoteListClient'
 import { NoteCard } from '@components/garden/NoteCard'
-import { RandomNoteButton } from '@components/garden/RandomNoteButton'
+import { GardenActions } from '@components/garden/GardenActions'
 import { RouteTabSync } from '@components/garden/RouteTabSync'
-import { RouteLink } from '@components/garden/RouteLink'
 import { JsonLd } from '@components/seo/JsonLd'
-import { INDEX_TAB_SLUG, GRAPH_TAB_SLUG } from '@store/tabStore'
+import { INDEX_TAB_SLUG } from '@store/tabStore'
 import { breadcrumbsJsonLd, collectionPageJsonLd } from '@lib/seo/jsonLd'
 import { baseMetadata } from '@lib/seo/metadata'
 import { loadSiteConfig } from '@lib/config/loadConfig'
+import { DEFAULT_GARDEN_ACTIONS } from '@config/site'
 import { loadGardenIntro } from '@lib/content/gardenIntro'
-
-/**
- * One shape for every action, whether it renders as a link, a route-aware
- * link or a button — three different elements that must not look like three
- * different affordances.
- */
-const ACTION_CARD =
-  'group flex items-center gap-2.5 p-4 rounded-xl border border-border ' +
-  'hover:border-primary hover:bg-card transition-all duration-300 ' +
-  'text-left w-full cursor-pointer'
 
 export async function generateMetadata({
   params,
@@ -66,6 +56,8 @@ export default async function GardenHubPage({
   // Archived notes are excluded the same way pins exclude them: a third of
   // this corpus can be retired writing, and a "random note" that lands there
   // a third of the time is a worse invitation than one that doesn't.
+  const gardenActions = siteConfig.garden?.actions ?? DEFAULT_GARDEN_ACTIONS
+
   const randomSlugs = allNotes.filter((n) => !n.isArchived && !n.noindex).map((n) => n.slug)
 
   const notesForList = allNotes.map((n) => ({
@@ -188,44 +180,22 @@ export default async function GardenHubPage({
 
       {/* Actions.
           The graph link used to sit here alone and unlabelled, the one bare
-          card between Topics and the search box — it read as homeless because
-          it was the only member of an unnamed category. Naming the category
-          fixes it, and the category is honest: Topics are material, these are
-          tools. Icons earn their place here, unlike on the topic cards, since
-          each one differs. */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
-          <Wrench size={12} /> {t('actions')}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <RouteLink
-            href={`/${locale}/notes/graph`}
-            routeSlug={GRAPH_TAB_SLUG}
-            routeTitle={t('knowledgeGraph')}
-            routeKind="graph"
-            className={ACTION_CARD}
-          >
-            <Network size={16} className="text-primary flex-shrink-0" />
-            <span className="font-medium text-sm">{t('knowledgeGraph')}</span>
-          </RouteLink>
-
-          {randomSlugs.length > 0 && (
-            <RandomNoteButton
-              slugs={randomSlugs}
-              locale={locale}
-              label={t('randomNote')}
-              className={ACTION_CARD}
-            />
-          )}
-
-          {/* Plain anchor, not `Link`: the feed is a build-time XML file, not
-              a route the client router knows how to push. */}
-          <a href={`/${locale}/feed.xml`} className={ACTION_CARD}>
-            <Rss size={16} className="text-primary flex-shrink-0" />
-            <span className="font-medium text-sm">{t('rssFeed')}</span>
-          </a>
-        </div>
-      </section>
+          card between Topics and the search box — homeless because it was the
+          only member of an unnamed category. Naming the category fixes it,
+          and the category is honest: Topics are material, these are tools.
+          Which ones appear, and in what order, is the site's call. */}
+      {gardenActions.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
+            <Wrench size={12} /> {t('actions')}
+          </div>
+          <GardenActions
+            actions={gardenActions}
+            locale={locale}
+            randomSlugs={randomSlugs}
+          />
+        </section>
+      )}
 
       {/* Note list */}
       <div className="mt-12">

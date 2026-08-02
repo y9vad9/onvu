@@ -1,3 +1,5 @@
+import type { IconName } from 'lucide-react/dynamic'
+
 /**
  * Any BCP-47 locale code. Free-form so users can add or remove languages by
  * editing `locales.supported` in `site.config.ts` and dropping matching
@@ -119,7 +121,46 @@ export interface SiteConfig {
   seo?: SeoConfig
   agents?: AgentsConfig
   shortcuts?: ShortcutsConfig
+  garden?: GardenConfig
 }
+
+/** Built-in actions the garden index can offer. */
+export type GardenActionId = 'graph' | 'random' | 'rss'
+
+/**
+ * A site-specific entry in the actions row.
+ *
+ * `icon` is any lucide-react icon name in kebab-case (`book-open`, `mail`,
+ * `github`). They load on demand rather than being bundled — all ~2000 would
+ * otherwise ship to reach the handful anyone uses — so naming one costs a
+ * small chunk fetch, not the icon set. Typed against lucide's own union, so a
+ * misspelling is a build error rather than a silently missing icon.
+ */
+export interface CustomGardenAction {
+  label: string
+  /**
+   * A bare path (`notes/rss`) is treated as internal and client-routed;
+   * anything carrying a scheme (`https://…`) opens as an external link.
+   */
+  href: string
+  icon?: IconName
+}
+
+export type GardenAction = GardenActionId | CustomGardenAction
+
+export interface GardenConfig {
+  /**
+   * Which actions appear, in this order. Omit for the built-in three;
+   * set to `[]` to drop the section entirely.
+   *
+   * Order is the config's, not the renderer's — being able to remove an
+   * entry but not move it would be half a feature.
+   */
+  actions?: readonly GardenAction[]
+}
+
+/** What the index renders when a site says nothing about actions. */
+export const DEFAULT_GARDEN_ACTIONS: readonly GardenActionId[] = ['graph', 'random', 'rss']
 
 /**
  * Keyboard shortcuts in the garden.
