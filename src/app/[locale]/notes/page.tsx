@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { Pin, Star, Network, ArrowRight } from 'lucide-react'
+import { Pin, Star, Network, Rss, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes, listPinnedNotes } from '@core/ListNotes'
 import { getEpics } from '@core/GetCategories'
 import { NoteListClient } from '@components/garden/NoteListClient'
 import { NoteCard } from '@components/garden/NoteCard'
+import { RandomNoteButton } from '@components/garden/RandomNoteButton'
 import { RouteTabSync } from '@components/garden/RouteTabSync'
 import { RouteLink } from '@components/garden/RouteLink'
 import { JsonLd } from '@components/seo/JsonLd'
@@ -15,6 +16,16 @@ import { breadcrumbsJsonLd, collectionPageJsonLd } from '@lib/seo/jsonLd'
 import { baseMetadata } from '@lib/seo/metadata'
 import { loadSiteConfig } from '@lib/config/loadConfig'
 import { loadGardenIntro } from '@lib/content/gardenIntro'
+
+/**
+ * One shape for every action, whether it renders as a link, a route-aware
+ * link or a button — three different elements that must not look like three
+ * different affordances.
+ */
+const ACTION_CARD =
+  'group flex items-center gap-2.5 p-4 rounded-xl border border-border ' +
+  'hover:border-primary hover:bg-card transition-all duration-300 ' +
+  'text-left w-full cursor-pointer'
 
 export async function generateMetadata({
   params,
@@ -52,6 +63,11 @@ export default async function GardenHubPage({
     getEpics(repo),
     loadGardenIntro(locale),
   ])
+  // Archived notes are excluded the same way pins exclude them: a third of
+  // this corpus can be retired writing, and a "random note" that lands there
+  // a third of the time is a worse invitation than one that doesn't.
+  const randomSlugs = allNotes.filter((n) => !n.isArchived && !n.noindex).map((n) => n.slug)
+
   const notesForList = allNotes.map((n) => ({
     slug: n.slug,
     title: n.title,
@@ -170,33 +186,46 @@ export default async function GardenHubPage({
         </section>
       )}
 
-      {/* Graph CTA */}
-      <RouteLink
-        href={`/${locale}/notes/graph`}
-        routeSlug={GRAPH_TAB_SLUG}
-        routeTitle={t('knowledgeGraph')}
-        routeKind="graph"
-        // Was a centred `p-8` dashed panel with a 56px icon tile — fine as a
-        // peer among other blocks, but once the hero and stats were gone it
-        // became the largest thing on the page by area, for one link. Same
-        // row shape as the cards above it now, so it reads as one more
-        // destination rather than the page's centrepiece.
-        className="group flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-card transition-all duration-300"
-      >
-        <div className="w-9 h-9 rounded-lg bg-primary-muted flex items-center justify-center flex-shrink-0">
-          <Network size={16} className="text-primary" />
+      {/* Actions.
+          The graph link used to sit here alone and unlabelled, the one bare
+          card between Topics and the search box — it read as homeless because
+          it was the only member of an unnamed category. Naming the category
+          fixes it, and the category is honest: Topics are material, these are
+          tools. Icons earn their place here, unlike on the topic cards, since
+          each one differs. */}
+      <section className="mb-12">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wide mb-4">
+          <Wrench size={12} /> {t('actions')}
         </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-medium text-sm group-hover:text-primary transition-colors">
-            {t('knowledgeGraph')}
-          </h2>
-          <p className="text-xs text-muted line-clamp-1">{t('knowledgeGraphDescription')}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <RouteLink
+            href={`/${locale}/notes/graph`}
+            routeSlug={GRAPH_TAB_SLUG}
+            routeTitle={t('knowledgeGraph')}
+            routeKind="graph"
+            className={ACTION_CARD}
+          >
+            <Network size={16} className="text-primary flex-shrink-0" />
+            <span className="font-medium text-sm">{t('knowledgeGraph')}</span>
+          </RouteLink>
+
+          {randomSlugs.length > 0 && (
+            <RandomNoteButton
+              slugs={randomSlugs}
+              locale={locale}
+              label={t('randomNote')}
+              className={ACTION_CARD}
+            />
+          )}
+
+          {/* Plain anchor, not `Link`: the feed is a build-time XML file, not
+              a route the client router knows how to push. */}
+          <a href={`/${locale}/feed.xml`} className={ACTION_CARD}>
+            <Rss size={16} className="text-primary flex-shrink-0" />
+            <span className="font-medium text-sm">{t('rssFeed')}</span>
+          </a>
         </div>
-        <ArrowRight
-          size={14}
-          className="text-muted group-hover:text-primary opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all flex-shrink-0 hidden md:inline-block"
-        />
-      </RouteLink>
+      </section>
 
       {/* Note list */}
       <div className="mt-12">
