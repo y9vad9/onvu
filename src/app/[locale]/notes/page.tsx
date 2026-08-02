@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { Sprout, Pin, Star, Network } from 'lucide-react'
+import { Pin, Star, Network } from 'lucide-react'
 import Link from 'next/link'
 import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes, listPinnedNotes } from '@core/ListNotes'
@@ -137,13 +137,16 @@ export default async function GardenHubPage({
                 href={epic.slug ? `/${locale}/notes/${epic.slug}` : `/${locale}/notes?parent=${encodeURIComponent(epic.name)}`}
                 className="group p-4 rounded-xl border border-border hover:border-primary hover:bg-card transition-all duration-300"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary-muted flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Sprout size={14} className="text-primary" />
-                  </div>
-                  <span className="text-xs text-muted">{epic.mentionCount}</span>
+                {/* No icon. Every card carried the same sprout, so it
+                    distinguished nothing while taking the top third of the
+                    card — the name and the count are the only things here
+                    that differ between topics. */}
+                <div className="flex items-baseline justify-between gap-2 mb-1">
+                  <p className="font-medium text-sm">{epic.name}</p>
+                  <span className="text-xs text-muted tabular-nums flex-shrink-0">
+                    {epic.mentionCount}
+                  </span>
                 </div>
-                <p className="font-medium text-sm mb-1">{epic.name}</p>
                 {epic.preview && (
                   <p className="text-xs text-muted italic line-clamp-2">{epic.preview}</p>
                 )}
