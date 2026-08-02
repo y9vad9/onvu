@@ -54,6 +54,7 @@
     "launchExplorer": "Launch Explorer",
     "noNotesFound": "No notes found",
     "searchPlaceholder": "Search notes…",
+    "sortBy": "Sort by",
     "filterByParents": "Filter by parents",
     "clearAll": "Clear All"
   },
