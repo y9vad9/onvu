@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { Pin, Star, Network } from 'lucide-react'
+import { Pin, Star, Network, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { createRepository } from '@adapters/createRepositories'
 import { listAllNotes, listPinnedNotes } from '@core/ListNotes'
@@ -90,6 +90,12 @@ export default async function GardenHubPage({
           says where you are. */}
       <h1 className="sr-only">{t('welcome')}</h1>
 
+      {/* One line, not a hero. Something has to tell a first-time visitor
+          what they've landed in, but the version this replaced spent a full
+          screen on a sprout, a greeting and this same sentence. Kept to the
+          sentence. */}
+      <p className="text-sm text-muted mb-10">{t('welcomeDescription')}</p>
+
       {/* Start here — the author's own entry points, and deliberately the
           first thing on the page.
           What used to lead here was a welcome hero and three stat cards.
@@ -162,14 +168,26 @@ export default async function GardenHubPage({
         routeSlug={GRAPH_TAB_SLUG}
         routeTitle={t('knowledgeGraph')}
         routeKind="graph"
-        className="group block p-8 rounded-2xl border-2 border-dashed border-border hover:border-primary hover:bg-primary-muted/30 transition-all duration-300 text-center"
+        // Was a centred `p-8` dashed panel with a 56px icon tile — fine as a
+        // peer among other blocks, but once the hero and stats were gone it
+        // became the largest thing on the page by area, for one link. Same
+        // row shape as the cards above it now, so it reads as one more
+        // destination rather than the page's centrepiece.
+        className="group flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-card transition-all duration-300"
       >
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-muted mb-4 group-hover:scale-110 transition-transform">
-          <Network size={24} className="text-primary" />
+        <div className="w-9 h-9 rounded-lg bg-primary-muted flex items-center justify-center flex-shrink-0">
+          <Network size={16} className="text-primary" />
         </div>
-        <h2 className="font-bold text-lg mb-1">{t('knowledgeGraph')}</h2>
-        <p className="text-sm text-muted mb-3">{t('knowledgeGraphDescription')}</p>
-        <span className="text-xs uppercase tracking-widest text-primary">{t('launchExplorer')} →</span>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-medium text-sm group-hover:text-primary transition-colors">
+            {t('knowledgeGraph')}
+          </h2>
+          <p className="text-xs text-muted line-clamp-1">{t('knowledgeGraphDescription')}</p>
+        </div>
+        <ArrowRight
+          size={14}
+          className="text-muted group-hover:text-primary opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all flex-shrink-0 hidden md:inline-block"
+        />
       </RouteLink>
 
       {/* Note list */}
