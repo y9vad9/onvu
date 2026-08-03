@@ -1,142 +1,72 @@
 # Onvu
 
-Onvu (On-View) is a developer-focused, multi-locale website template that combines a structured portfolio homepage with an interconnected digital knowledge garden. Built with Next.js 15, TypeScript, Tailwind CSS, and Zustand, it provides a high-performance, responsive layout designed to serve as a customizable personal space.
+Onvu (On-View) is a website template that pairs a single-page developer portfolio with a digital knowledge garden. It runs on Next.js 16, TypeScript, Tailwind CSS 4 and Zustand, and it builds either as a static export for a CDN or as a Node server.
 
-## Key Features
-- **Dual-Mode System**: A clean, single-page resume portfolio (work history, project list, education, featured writings) combined with a deep knowledge garden.
-- **Interactive Three-Panel Garden**: A tabbed note workspace featuring a collapsible navigation/search explorer, a center note view with scroll-restored tab states, and a collapsible tools panel displaying backlinks, table of contents, series navigation, and localized graph visualization.
-- **Automatic Asset Pipeline**: Relative image/video references in markdown files are captured at build time, content-hashed for cache-busting, resized to multiple responsive widths, compressed into WebP, and outputted directly to `public/notes-assets/`.
-- **Global & Local Graph Views**: Interactive, force-directed knowledge graph visualizations utilizing canvas-based rendering to show note connections (2-hop neighborhood views on individual notes, and full-screen visualization globally).
-- **Fuzzy Search & Command Palette**: Interactive keyboard-driven palette (`/` or double `Shift`) synchronized with browser query parameters, enabling deep search across writing content, themes, and locale switching.
-- **Persistent Themes**: Seamless switching across five states (Light, Dark, Warm, Forest, and System) with zero flash of unstyled content (FOUC).
-- **Multi-Locale**: English, German, and Ukrainian localizations supported out-of-the-box, generating locale-prefixed routes, localized sitemaps, metadata tags, and per-locale RSS feeds.
-- **Rich Markdown Support**: LaTeX, Mermaid, WikiLinks, Videos, Image Carousels and many more!
+It is meant to be forked and kept in sync. Everything you are expected to edit lives in `content/` and `site.config.ts`. Everything under `src/` is the engine, and upstream keeps changing it. [Upgrading](docs/upgrading.md) explains how that boundary is enforced and where it leaks.
 
-## Quick Start
+## What it does
 
-### 1. Project Initialization
+The landing page is assembled in `content/landing.tsx` from small primitives: a hero, work history, projects, education and featured writing. Sections are plain JSX, so hiding one means deleting a block rather than finding a flag.
+
+The garden is a three-panel note workspace. On the left, a file tree and a full-text search. In the middle, a tabbed note view that restores each tab's scroll position. On the right, the table of contents, series navigation, outgoing links, backlinks, and a graph of whatever note is open. Panels collapse, resize, and remember their state.
+
+Notes are Markdown files with YAML frontmatter. `[[Wiki Links]]` resolve by title or slug, and the reverse edges become backlinks and a force-directed graph you can browse at full size. Beyond GFM you get KaTeX, Mermaid, Shiki syntax highlighting, footnotes, Obsidian callouts, image carousels, video embeds and click-to-zoom images.
+
+Images and videos referenced from a note are processed at build time: resized across an eleven-step width ladder, encoded to WebP, content-hashed, and written to `public/notes-assets/` (which is git-ignored, so no build output ever lands in your repository).
+
+A command palette opens on `/` or a double `Shift` tap. It fuzzy-searches notes, filters them by `parent:`, switches theme and language, and lists every garden command with its keyboard chord.
+
+Five themes ship by default (light, dark, warm, forest, system) and you can replace the whole list. A blocking bootstrap script and a `color-scheme` meta tag mean no flash of the wrong palette on a cold load.
+
+English, German and Ukrainian are set up out of the box. Every route is locale-prefixed, each locale gets its own RSS feed and its own note space, and configuration, navigation and interface strings can all be overridden per language. Adding or removing one is a config edit plus a folder.
+
+SEO is handled without a plugin: canonical and hreflang links, JSON-LD for the site, person, articles, breadcrumbs and collections, an Open Graph card generated per note, a sitemap and a robots.txt with an AI crawler policy.
+
+Optional machine-readable surfaces for AI agents (Markdown mirrors of every note, `llms.txt`, structured data extensions, WebMCP tools) are all off until you turn them on. See [Agents and AI surfaces](docs/agents.md).
+
+## Quick start
+
 ```bash
-# Clone the repository
 git clone https://github.com/y9vad9/onvu.git my-site
 cd my-site
-
-# Rename remotes to pull upstream updates easily
 git remote rename origin upstream
 git remote add origin https://github.com/your-username/my-site.git
-
-# Install dependencies and start the development server
 npm install
 npm run dev
 ```
 
-### 2. Available Scripts
-- `npm run dev` - Start local Next.js development server.
-- `npm run build` - Compile the dynamic production bundle for server hosting.
-- `npm run build:static` - Compile the static export (`out/` directory) for CDNs/Cloudflare Pages.
-- `npm run start` - Run the production-built Next.js server locally.
-- `npm run lint` - Lint the codebase.
-- `npm run test` - Run Vitest unit and integration suites.
-- `npm run typecheck` - Verify TypeScript compiler checks.
+Renaming the remote matters: `upstream` is where template updates come from, and the merge driver that protects your files is armed by `npm install`. Then work through [Getting started](docs/getting-started.md), which walks the first hour: what to put in `site.config.ts`, where notes go, and what to delete.
 
-## Customization
+### Scripts
 
-To ensure your custom content is protected when fetching upstream changes, Onvu uses `.gitattributes` configured with `merge=ours`. Edits to the following files will never be overwritten by upstream merges:
-
-| File / Directory | Purpose |
+| Script | What it does |
 |:---|:---|
-| `site.config.ts` | Global configuration (socials, work history, education, projects, SEO, locales, and nav featured items). |
-| `content/landing.tsx` | Layout and composition of the portfolio home page sections. |
-| `content/notes/` | Markdown files (.md) grouped under locale subfolders (e.g., `content/notes/en/`). |
-| `content/assets/` | Shared static assets and media files. |
-| `content/i18n/` | Localized string overrides for `en`, `de`, and `uk`. |
-| `content/theme.css` | Custom theme colors and CSS variables for light, dark, warm, and forest modes. |
-| `content/navigation.ts` | Custom dropdown structures and paths for the desktop and mobile menus. |
+| `npm run dev` | Development server on port 3000. |
+| `npm run build` | Production build for a Node server (`ONVU_MODE=server`). |
+| `npm run build:static` | Static export to `out/` for a CDN (`ONVU_MODE=static`). |
+| `npm start` | Serve the production build. Requires `npm run build` first. |
+| `npm run lint` | ESLint over the whole repository. |
+| `npm test` | Vitest unit and integration suites. |
+| `npm run test:e2e` | Playwright end-to-end specs. |
+| `npm run typecheck` | `tsc --noEmit`. |
 
-## Note Configuration (Frontmatter)
+## Documentation
 
-Notes are written in Markdown with YAML frontmatter. Frontmatter fields direct layout behavior, category groups, and sorting:
-
-```markdown
----
-title: "Understanding Kotlin Coroutines"
-preview: "A beginner's guide to suspend functions, scopes, and context dispatchers."
-date: 2024-03-01
-parents: ["Kotlin", "Backend"]
-series: "Kotlin Coroutines"
-order: 1
-archived: false
-epic: true
-coverImage: "./sample-colocated.png"
----
-```
-
-### Metadata Fields
-- `parents`: An array of categories/tags used for filtering and search index categorization.
-- `series` & `order`: Groups notes together into a sequential course or series with back/next navigation.
-- `archived`: Set to `true` to flag notes as archived (displays an amber badge).
-- `epic`: Set to `true` to highlight the note inside the garden dashboard's main category cards.
-- `coverImage`: Relates to a co-located image (e.g., `./image.png`) or a shared path in `content/assets/`.
-
-## Asset Processing
-
-Notes can reference images and videos using standard Markdown/HTML relative syntax. 
-
-At build time:
-1. Primitives parse Markdown/MDX ASTs to locate local media paths.
-2. Found images are read and processed using Sharp, generating responsive `webp` sizes (`480w`, `800w`, `1280w`, `1920w`).
-3. Compressed assets are written with content-addressed filenames into `/public/notes-assets/`.
-4. This directory (`/public/notes-assets/`) is git-ignored, meaning you never check bloated production WebP files into version control. Keep only your source images in the content folder.
-
-## Deployment
-
-### General Setup
-
-Set the following environment variable so sitemaps, RSS feeds, and canonical URLs resolve correctly in production:
-
-```env
-NEXT_PUBLIC_BASE_URL=https://yourdomain.com
-```
-
-Onvu can be deployed to Vercel, Netlify, or any platform that supports Next.js or static export.
-
-### Cloudflare Pages (Static Export)
-
-Onvu can be built as a fully static application that can be hosted on Cloudflare Pages, GitHub Pages, or any CDN. 
-
-When deploying statically, use the command `npm run build:static` (pre-configured in `.github/workflows/deploy.yml`). This command:
-1. Temporarily moves the server-only dynamic `/api` routes out of the Next.js compilation folder during the build to satisfy Next's static export requirements.
-2. Directs the frontend client (via `NEXT_PUBLIC_ONVU_MODE=static`) to load all search indexes and knowledge graph data from pre-built, static JSON snapshots emitted under `public/_static/`.
-
-A ready-to-go GitHub Actions workflow is included at `.github/workflows/deploy.yml`.
-
-**1. Add repository secrets**
-
-In your GitHub repository, go to **Settings → Secrets and variables → Actions** and add:
-
-| Secret | Where to get it |
+| Guide | Covers |
 |:---|:---|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens (use the "Edit Cloudflare Pages" template) |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → right sidebar on any zone page |
+| [Getting started](docs/getting-started.md) | First hour: clone, configure, write, delete the demo. |
+| [Configuration](docs/configuration.md) | Every key in `site.config.ts`, per-locale overrides, environment variables. |
+| [Writing notes](docs/writing-notes.md) | Frontmatter, folder layout, Markdown and Obsidian syntax, images and video. |
+| [Customisation](docs/customisation.md) | The `content/` seams: landing page, footer, navigation, note slots, garden intro. |
+| [Theming](docs/theming.md) | Design tokens, the five built-in palettes, adding your own. |
+| [Localisation](docs/localisation.md) | Adding a language, the four-layer message merge, right-to-left support. |
+| [The garden](docs/garden.md) | Panels, tabs, shortcuts, command palette, search and graph. |
+| [SEO and metadata](docs/seo.md) | Canonicals, hreflang, JSON-LD, feeds, sitemap, robots, social cards. |
+| [Agents and AI surfaces](docs/agents.md) | Markdown mirrors, `llms.txt`, crawler policy, content signals, WebMCP. |
+| [Deployment](docs/deployment.md) | Static versus server builds, Cloudflare Pages, GitHub Pages, subpaths. |
+| [Upgrading](docs/upgrading.md) | Pulling from upstream, `merge=ours`, what it does and does not protect. |
+| [Architecture](docs/architecture.md) | How `src/` is laid out, the build pipeline, and how to test changes. |
 
-**2. Update the project name**
+## Requirements
 
-In `.github/workflows/deploy.yml`, change the `--project-name` value in the Wrangler command to match your Cloudflare Pages project name:
-
-```yaml
-command: pages deploy out --project-name=your-project-name
-```
-
-**3. Enable automatic deploys on push**
-
-By default, the workflow only runs when triggered manually (via **Actions → Deploy to Cloudflare Pages → Run workflow**). To automate it on every push to `main`, open `.github/workflows/deploy.yml` and uncomment the `push` trigger block at the top of the file.
-
-### Pulling Upstream Updates
-
-To pull new features, bug fixes, and engine updates from the main template:
-
-```bash
-git fetch upstream
-git merge upstream/main
-```
-
-Because of the `merge=ours` policies in `.gitattributes`, your files under `content/` and `site.config.ts` will merge cleanly without risk of loss.
+Node 20.9 or newer, which is what both `next` and `sharp` declare. The bundled GitHub Actions workflow runs Node 26. `sharp` is a native dependency that ships prebuilt binaries for the common platforms; when `npm install` fails on a fresh clone, that is usually where.
