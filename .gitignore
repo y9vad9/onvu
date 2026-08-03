@@ -75,6 +75,10 @@ public/llms-full.txt
 # The pre-merge snapshots, genuinely generated.
 public/.onvu-headers-base
 public/.onvu-redirects-base
+# Their in-flight temporaries. The generated host files are written to a
+# neighbouring temp and renamed into place so a concurrent reader never sees a
+# half-written file; a build killed between the two steps leaves one behind.
+public/.*.tmp
 
 # Local wrangler / miniflare state (pages dev)
 .wrangler/
