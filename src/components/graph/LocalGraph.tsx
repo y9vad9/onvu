@@ -64,9 +64,15 @@ export function LocalGraph({ slug }: { slug: string }) {
         // for the moment between Ctrl-click and the destination mount.
         routeTitle="Knowledge Graph"
         routeKind="graph"
-        className="flex items-center justify-center gap-1 m-2 py-1.5 text-xs text-muted hover:text-primary border border-border hover:border-primary rounded transition-colors"
+        // The panel is resizable down to 180px and this label is translated,
+        // so assume it will wrap: `text-center` keeps a two-line label looking
+        // deliberate instead of ragged, and `px-2` stops it touching the
+        // border. Without `flex-shrink-0` the arrow is what gives way first —
+        // an 11px icon squashed to 9px wide but still 11 tall, which reads as
+        // a smudge rather than an arrow.
+        className="flex items-center justify-center gap-1 m-2 px-2 py-1.5 text-xs text-center text-muted hover:text-primary border border-border hover:border-primary rounded transition-colors"
       >
-        {t('viewFullGraph')} <ArrowRight size={11} />
+        {t('viewFullGraph')} <ArrowRight size={11} className="flex-shrink-0" />
       </RouteLink>
     </div>
   )
