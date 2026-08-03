@@ -50,6 +50,9 @@
       "~/site.config": [
         "./site.config"
       ],
+      "~/site.*.config": [
+        "./site.*.config"
+      ],
       "~/content/*": [
         "./content/*"
       ]
