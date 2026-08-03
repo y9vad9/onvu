@@ -60,14 +60,12 @@ export const config: SiteConfig = {
         role: 'Senior Software Engineer',
         period: '2022 – Present',
         url: 'https://example.com',
-        logo: '/logos/acme.svg',
       },
       {
         company: 'Startup XYZ',
         role: 'Backend Engineer',
         period: '2019 – 2022',
         url: 'https://example.com',
-        logo: '/logos/startup.svg',
       },
     ],
 
@@ -89,7 +87,6 @@ export const config: SiteConfig = {
         institution: 'University of Technology',
         degree: 'B.Sc. Computer Science',
         period: '2015 – 2019',
-        logo: '/logos/university.svg',
       },
     ],
   },
@@ -99,10 +96,16 @@ export const config: SiteConfig = {
   // enable per-note discussion threads backed by a GitHub Discussions repo.
   comments: { provider: 'none' },
 
-  // SEO + structured data. Set `siteUrl` to your production origin so
-  // canonical/OG URLs resolve, then fill the rest in as you go.
+  // SEO + structured data. Set your production origin either here or as
+  // `NEXT_PUBLIC_BASE_URL` — this key wins when both are present.
+  //
+  // Deliberately left commented out. It used to ship as
+  // `siteUrl: 'https://example.com'`, and since a non-empty value beats the
+  // environment variable, following the README's deployment step to the letter
+  // produced a clean build whose sitemap, RSS guids, canonicals and OG
+  // `metadataBase` all pointed at example.com. Nothing warned.
   seo: {
-    siteUrl: 'https://example.com',
+    // siteUrl: 'https://your-domain.com',
     // defaultOgImage: '/og/default.png',
     // twitterHandle: '@yourhandle',
     // organization: { name: 'Acme Inc', logo: '/logo.png' },
