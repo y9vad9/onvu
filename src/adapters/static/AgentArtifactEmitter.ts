@@ -18,6 +18,7 @@ import {
 } from '@lib/agents/llmsTxt'
 import { loadSiteConfig } from '@lib/config/loadConfig'
 import { writeFenced, type Fence } from '@lib/hosting/fencedBlock'
+import { hostFileIo } from '@lib/hosting/fileIo'
 import type { Locale } from '@config/site'
 
 const PUBLIC_ROOT = path.join(process.cwd(), 'public')
@@ -330,15 +331,6 @@ async function writeHeadersFile(opts: HeadersFileOptions): Promise<void> {
     snapshot: path.join(PUBLIC_ROOT, HEADERS_BASE),
     fence: HEADERS_FENCE,
     block: buildHeadersFile(opts),
-    io: {
-      read: async (p) => {
-        try {
-          return await fs.readFile(p, 'utf-8')
-        } catch {
-          return null
-        }
-      },
-      write: (p, content) => fs.writeFile(p, content, 'utf-8'),
-    },
+    io: hostFileIo,
   })
 }

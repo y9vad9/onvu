@@ -52,7 +52,14 @@ export function composeFencedFile(base: string, fence: Fence, block: string): st
   return base ? `${base}\n\n${fenced}\n` : `${fenced}\n`
 }
 
-/** Reading and writing, injected so tests need no temp directory. */
+/**
+ * Reading and writing, injected so tests need no temp directory.
+ *
+ * `write` must be atomic from a reader's point of view. `fs.writeFile`
+ * truncates before it writes, and page generation runs across worker
+ * processes, so a plain write leaves a window in which another worker reads an
+ * existing-but-empty file. See `writeFenced` for what that cost.
+ */
 export interface FencedFileIo {
   read: (path: string) => Promise<string | null>
   write: (path: string, content: string) => Promise<void>
@@ -80,21 +87,36 @@ export interface WriteFencedOptions {
  * file and each add a block. Instead the site's own content is captured once as
  * a base and the file is rebuilt from it every time, so concurrent workers
  * write byte-identical content and duplication is not representable.
+ *
+ * Two rules keep that safe under concurrency, and both were learned the
+ * expensive way: an existing snapshot is never rewritten, and an empty base is
+ * never snapshotted. Without them a worker that read the target mid-truncate
+ * saw an existing-but-empty file, concluded the site owned nothing, and wrote
+ * that conclusion over the snapshot. The next write then rebuilt the file from
+ * nothing, and a fork's redirects were gone with no error anywhere. `io.write`
+ * being atomic closes the window; these two make the outcome unreachable even
+ * if it reopens.
  */
 export async function writeFenced(opts: WriteFencedOptions): Promise<void> {
   const { target, snapshot, fence, block, io } = opts
+  const saved = await io.read(snapshot)
   const current = await io.read(target)
 
   let base: string
-  if (current === null) {
+  if (saved !== null) {
+    // Already captured. This is the authority from here on: the target has our
+    // block in it now, so it can only ever be an approximation of the original.
+    base = saved
+  } else if (current === null) {
     base = ''
   } else if (hasFencedBlock(current, fence)) {
-    // A previous build wrote here. Prefer the snapshot, since the stripped
-    // file is only an approximation of what the site originally had.
-    base = (await io.read(snapshot)) ?? stripFencedBlock(current, fence)
+    base = stripFencedBlock(current, fence)
   } else {
     base = current.trimEnd()
-    await io.write(snapshot, base)
+    // Only when there is something to save. An empty snapshot is
+    // indistinguishable from a captured "the site owns nothing", and writing
+    // one is how the real content became unrecoverable.
+    if (base) await io.write(snapshot, base)
   }
 
   await io.write(target, composeFencedFile(base, fence, block))

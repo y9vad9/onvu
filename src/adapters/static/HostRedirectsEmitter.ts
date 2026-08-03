@@ -1,8 +1,8 @@
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import { routing } from '@i18n/routing'
 import { buildRedirectsFile } from '@lib/hosting/redirects'
-import { writeFenced, type Fence, type FencedFileIo } from '@lib/hosting/fencedBlock'
+import { writeFenced, type Fence } from '@lib/hosting/fencedBlock'
+import { hostFileIo } from '@lib/hosting/fileIo'
 
 const PUBLIC_ROOT = path.join(process.cwd(), 'public')
 
@@ -14,17 +14,6 @@ const FENCE: Fence = {
 
 /** Snapshot of the site's own `_redirects`, so ours is never appended twice. */
 const SNAPSHOT = '.onvu-redirects-base'
-
-const io: FencedFileIo = {
-  read: async (p) => {
-    try {
-      return await fs.readFile(p, 'utf-8')
-    } catch {
-      return null
-    }
-  },
-  write: (p, content) => fs.writeFile(p, content, 'utf-8'),
-}
 
 let inflight: Promise<void> | null = null
 
@@ -55,7 +44,7 @@ export function emitHostRedirects(): Promise<void> {
     snapshot: path.join(PUBLIC_ROOT, SNAPSHOT),
     fence: FENCE,
     block: buildRedirectsFile(routing.defaultLocale),
-    io,
+    io: hostFileIo,
   })
   return inflight
 }

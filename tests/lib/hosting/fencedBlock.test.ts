@@ -117,6 +117,38 @@ describe('writeFenced', () => {
     expect(out).toContain('Strict-Transport-Security')
   })
 
+  it('does not lose the site\'s rules to a reader that caught a truncated file', async () => {
+    // The failure this is here for, which ate a fork's redirects. `writeFile`
+    // truncates before writing, so a worker could read a file that existed and
+    // was empty, conclude the site owned nothing, and save that over the
+    // snapshot. Everything after rebuilt from nothing.
+    const files = memoryIo({ [TARGET]: SITE_RULES })
+    await run(files, 'generated')
+    expect(files.files.get(SNAPSHOT)).toBe(SITE_RULES)
+
+    // Simulate the window: the target momentarily reads as empty.
+    files.files.set(TARGET, '')
+    const out = await run(files, 'generated')
+
+    expect(out).toContain('Strict-Transport-Security')
+    expect(files.files.get(SNAPSHOT)).toBe(SITE_RULES)
+  })
+
+  it('never records an empty snapshot, which is indistinguishable from "owns nothing"', async () => {
+    const files = memoryIo({ [TARGET]: '' })
+    await run(files, 'generated')
+    expect(files.files.has(SNAPSHOT)).toBe(false)
+  })
+
+  it('keeps the first snapshot rather than rewriting it from our own output', async () => {
+    const files = memoryIo({ [TARGET]: SITE_RULES })
+    await run(files, 'generated')
+    // A later build sees a file that now contains our block. The snapshot is
+    // the authority, and must not be replaced by anything derived from it.
+    await run(files, 'generated')
+    expect(files.files.get(SNAPSHOT)).toBe(SITE_RULES)
+  })
+
   it('produces identical output from concurrent writers', async () => {
     // Page generation runs across worker processes. Read-then-append let two of
     // them both observe a fence-free file and each add a block; rebuilding from
