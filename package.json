@@ -6,7 +6,7 @@
     "prepare": "git config merge.ours.driver true || exit 0",
     "dev": "next dev --webpack",
     "build": "ONVU_MODE=server next build --webpack",
-    "build:static": "mv src/app/api src/api-temp && ONVU_MODE=static next build --webpack ; STATUS=$? ; mv src/api-temp src/app/api ; exit $STATUS",
+    "build:static": "ONVU_MODE=static next build --webpack",
     "start": "ONVU_MODE=server next start",
     "lint": "eslint .",
     "test": "vitest run",

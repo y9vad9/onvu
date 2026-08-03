@@ -10,7 +10,9 @@ npm run build:static
 
 Produces `out/`, a directory of files you can hand to any CDN: Cloudflare Pages, GitHub Pages, Netlify, S3, a bare nginx.
 
-The script sets `ONVU_MODE=static`, which turns on Next's `output: 'export'` and `trailingSlash`, and disables image optimisation. It also moves `src/app/api` out of the way for the duration of the build, because a static export cannot contain route handlers, and moves it back afterwards whether the build succeeded or not.
+The script sets `ONVU_MODE=static`, which turns on Next's `output: 'export'` and `trailingSlash`, and disables image optimisation.
+
+A static export cannot contain route handlers, so the API routes have to be absent from the build rather than merely unused. They are named `route.node.ts`, and `pageExtensions` counts that suffix as a route only when the build is not a static one, so the exclusion is configuration rather than anything that touches the filesystem.
 
 Since there is no server to answer them, search and graph data are written at build time to `public/_static/<locale>/search-index.json` and `graph.json`, and the browser bundle fetches those instead of calling the API. `NEXT_PUBLIC_ONVU_MODE` is what tells it which.
 

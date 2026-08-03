@@ -35,6 +35,24 @@ const nextConfig: NextConfig = {
   // included in it; the client reads pre-built JSON from public/_static/
   // instead (emitted by StaticBuildEmitter).
   ...(staticBuild && { output: 'export' }),
+  /**
+   * Which files count as routes.
+   *
+   * `output: 'export'` refuses route handlers, so the API routes have to be
+   * absent from a static build rather than merely unused. They are named
+   * `route.node.ts` and that suffix is only a route extension when this is not
+   * a static build, which makes the exclusion a matter of configuration.
+   *
+   * The alternative was moving `src/app/api` out of the tree for the duration
+   * of the build and moving it back afterwards. That works until the build is
+   * interrupted, at which point the directory stays moved and the next build
+   * fails on the leftover with an error about the wrong file.
+   *
+   * The default list is spelled out because naming any extension replaces it.
+   */
+  pageExtensions: staticBuild
+    ? ['tsx', 'ts', 'jsx', 'js']
+    : ['node.ts', 'tsx', 'ts', 'jsx', 'js'],
   // URL shape and image handling follow the *target*, not this process, so a
   // dev server for a static site still renders the URLs and the images that
   // site will actually ship. Neither of them breaks anything in dev, which is

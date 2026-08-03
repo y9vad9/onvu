@@ -44,7 +44,7 @@ They are declared in three places that have to agree: `tsconfig.json` for the co
 | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/icon` | Generated. |
 | `/opengraph-image` | Site social card. |
 | `/<locale>/notes/<slug>/opengraph-image`, `/twitter-image` | Per-note social cards. |
-| `/api/search`, `/api/search-index`, `/api/graph` | Server mode only. |
+| `/api/search`, `/api/search-index`, `/api/graph` | Server mode only. Their files are `route.node.ts`, which `pageExtensions` treats as a route everywhere except a static build. |
 
 No page is generated at `/`. In a server build the middleware redirects it to a locale; in a static export a generated `_redirects` rule does the same job. See [Deployment](deployment.md).
 
