@@ -1,8 +1,8 @@
 import type { NavigationConfig } from '@config/navigation'
 
 /**
- * Top navigation for the landing page. Edit freely — the framework will
- * not overwrite this file on `git pull upstream` (see `.gitattributes`).
+ * Top navigation for the landing page. Edit freely: the framework will not
+ * overwrite this file on `git pull upstream` (see `.gitattributes`).
  *
  * - Hrefs are site-relative (`/notes`, `#projects`). The active locale
  *   prefix is added automatically.
@@ -13,7 +13,7 @@ import type { NavigationConfig } from '@config/navigation'
 export const navigation: NavigationConfig = {
   default: [
     {
-      label: 'Writing',
+      label: 'Notes',
       items: [{ label: 'View all notes', href: '/notes' }],
     },
     {
@@ -25,14 +25,14 @@ export const navigation: NavigationConfig = {
     },
     {
       label: 'About',
-      items: [{ label: 'Summary', href: '#summary' }],
+      items: [{ label: 'Summary', href: '#notes' }],
     },
   ],
 
   byLocale: {
     de: [
       {
-        label: 'Schreiben',
+        label: 'Notizen',
         items: [{ label: 'Alle Notizen', href: '/notes' }],
       },
       {
@@ -44,7 +44,7 @@ export const navigation: NavigationConfig = {
       },
       {
         label: 'Über',
-        items: [{ label: 'Zusammenfassung', href: '#summary' }],
+        items: [{ label: 'Zusammenfassung', href: '#notes' }],
       },
     ],
     uk: [
@@ -61,7 +61,7 @@ export const navigation: NavigationConfig = {
       },
       {
         label: 'Про мене',
-        items: [{ label: 'Стисло', href: '#summary' }],
+        items: [{ label: 'Стисло', href: '#notes' }],
       },
     ],
   },
