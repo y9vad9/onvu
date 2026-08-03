@@ -49,7 +49,7 @@ export const navigation: NavigationConfig = {
     ],
     uk: [
       {
-        label: 'Тексти',
+        label: 'Нотатки',
         items: [{ label: 'Усі нотатки', href: '/notes' }],
       },
       {
