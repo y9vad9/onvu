@@ -72,7 +72,17 @@ export function LocalGraph({ slug }: { slug: string }) {
         // a smudge rather than an arrow.
         className="flex items-center justify-center gap-1 m-2 px-2 py-1.5 text-xs text-center text-muted hover:text-primary border border-border hover:border-primary rounded transition-colors"
       >
-        {t('viewFullGraph')} <ArrowRight size={11} className="flex-shrink-0" />
+        {/*
+          `justify-center` centres the whole row, and the row is label + gap +
+          arrow — so the label itself sat 7.5px left of centre, in every
+          language. Mirroring the arrow on the leading side puts the label back
+          on the button's axis. It's the same icon at the same size rather than
+          a fixed-width spacer, so the two cannot drift apart if `size` changes,
+          and being in flow it stays balanced when the label wraps.
+        */}
+        <ArrowRight size={11} aria-hidden className="invisible flex-shrink-0" />
+        {t('viewFullGraph')}
+        <ArrowRight size={11} className="flex-shrink-0" />
       </RouteLink>
     </div>
   )
